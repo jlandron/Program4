@@ -9,12 +9,10 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
 
     }
 
-    
     public FileContents download(String client, String filename, String mode) throws RemoteException {
         return null;
     }
 
-    
     public boolean upload(String client, String filename, FileContents contents) throws RemoteException {
         return false;
     }
