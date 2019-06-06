@@ -20,7 +20,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
     public FileClient(String ipAddress, String port) throws RemoteException, NotBoundException, MalformedURLException
     {
-        _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
+       // _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
     }
 
     public boolean invalidate() throws RemoteException {
@@ -59,7 +59,14 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
     private void start()
     {
-        getFileInfo();
+        System.out.println("Enter \"quit\" or \"exit\" to end the program.");
+        while (true)
+        {
+            getFileInfo();
+
+            // Check cache for file, download if needed
+            //_server.download("hostname", _fileName, (_writeMode ? "W" : "R"));
+        }
     }
 
     /**
@@ -73,6 +80,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         if (args.length != 2)
         {
             System.out.println("java FileClient [serverIp] [port]");
+            System.exit(-1);
         }
 
         FileClient client = null;
