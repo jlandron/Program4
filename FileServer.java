@@ -1,11 +1,11 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
+import java.util.Vector;
 import java.io.*;
 
 class FileServer extends UnicastRemoteObject implements ServerInterface {
     private String port;
-    private Vector<FileContents> files;
+    private Vector<File> files;
 
     FileServer() throws RemoteException {
         port = null;
@@ -18,11 +18,11 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
     }
 
     public FileContents download(String client, String filename, String mode) throws RemoteException {
-        FileContents file = null;
+        File file = null;
         for (int i = 0; i < this.files.size(); i++) {
 
         }
-        return file;
+        return file.download(client, mode);
     }
 
     public boolean upload(String client, String filename, FileContents contents) throws RemoteException {
