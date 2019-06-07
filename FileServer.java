@@ -4,11 +4,12 @@ import java.util.*;
 import java.io.*;
 
 class FileServer extends UnicastRemoteObject implements ServerInterface {
-    private String port = null;
-    private Vector<FileContents> files = null;
+    private String port;
+    private Vector<FileContents> files;
 
     FileServer() throws RemoteException {
-
+        port = null;
+        files = null;
     }
 
     public FileServer(String port) throws RemoteException {
