@@ -6,11 +6,20 @@ import java.io.*;
 
 class FileClient extends UnicastRemoteObject implements ClientInterface {
 
+    public enum ClientState
+    {
+        INVALID,
+        READ_SHARED,
+        WRITE_OWNED,
+        RELEASE_OWNERSHIP
+    }
+
     private BufferedReader m_Reader = null;
 
     private String _fileName = "";   // File to read or write
     private boolean _writeMode = false; // Access mode for the file
     private ServerInterface _server = null;
+    private ClientCache _clientCache = null;
 
 
     protected FileClient() throws RemoteException {
@@ -21,8 +30,15 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     public FileClient(String ipAddress, String port) throws RemoteException, NotBoundException, MalformedURLException
     {
        // _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
+        _clientCache = new ClientCache();
     }
 
+    /**
+     * Will invalidate the current file in the cache if there is one
+     *
+     * @return True if file is invalidated, false otherwise
+     * @throws RemoteException
+     */
     public boolean invalidate() throws RemoteException {
         return false;
     }
