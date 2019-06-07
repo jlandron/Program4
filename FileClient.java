@@ -1,4 +1,6 @@
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
@@ -20,6 +22,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     private boolean _writeMode = false; // Access mode for the file
     private ServerInterface _server = null;
     private ClientCache _clientCache = null;
+    private String _clientName = "";
 
 
     protected FileClient() throws RemoteException {
@@ -27,10 +30,12 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         // TODO Auto-generated constructor stub
     }
 
-    public FileClient(String ipAddress, String port) throws RemoteException, NotBoundException, MalformedURLException
+    public FileClient(String ipAddress, String port)
+            throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException
     {
        // _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
         _clientCache = new ClientCache();
+        _clientName = InetAddress.getLocalHost().getHostName();
     }
 
     /**
@@ -40,11 +45,31 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      * @throws RemoteException
      */
     public boolean invalidate() throws RemoteException {
-        return false;
+
+        if ((_clientCache == null) || (_clientCache.get_state() == ClientState.WRITE_OWNED))
+        {
+            return false;
+        }
+
+        _clientCache.set_state(ClientState.INVALID);
+        return true;
+
     }
 
     public boolean writeback() throws RemoteException {
-        return false;
+        if ((_clientCache == null) || (_clientCache.get_state() != ClientState.RELEASE_OWNERSHIP))
+        {
+            return false;
+        }
+
+        FileContents contents = _clientCache.getCache();
+        if (contents == null)
+        {
+            return false;
+        }
+
+        _server.upload(_clientName, _fileName, contents);
+        return true;
     }
 
     /***
@@ -80,8 +105,21 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         {
             getFileInfo();
 
-            // Check cache for file, download if needed
-            //_server.download("hostname", _fileName, (_writeMode ? "W" : "R"));
+            if (!_clientCache.cacheContainsFile(_fileName))
+            {
+                try
+                {
+                    FileContents contents = _server.download(_clientName, _fileName, (_writeMode ? "W" : "R"));
+                    _clientCache.createCache(contents);
+                    _clientCache.set_state((_writeMode ? ClientState.WRITE_OWNED : ClientState.READ_SHARED));
+                }
+                catch (RemoteException ex)
+                {
+                    System.err.println("Error downloading file: " + _fileName);
+                    System.err.println("Error: " + ex.getMessage());
+                    continue;
+                }
+            }
         }
     }
 
@@ -108,7 +146,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             Naming.rebind("rmi://localhost:" + args[1] + "/fileclient",client);
             System.out.println("rmi://localhost:" + args[1] + "/fileclient invoked, client ready.");
         }
-        catch (RemoteException | NotBoundException | MalformedURLException ex)
+        catch (RemoteException | NotBoundException | MalformedURLException | UnknownHostException ex)
         {
             System.err.println("Error creating file client: " + ex.getMessage());
             System.exit(-1);

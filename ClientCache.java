@@ -47,6 +47,7 @@ public class ClientCache
     void set_state(FileClient.ClientState state)
     {
         _state = state;
+        // TODO: Add chmod call here based on state
     }
 
     boolean cacheExists()
@@ -66,5 +67,25 @@ public class ClientCache
         }
 
         return true;
+    }
+
+    FileContents getCache()
+    {
+        FileContents contents = null;
+        try
+        {
+            contents = new FileContents(Files.readAllBytes(_cacheFilePath));
+        }
+        catch(IOException ex)
+        {
+            return null;
+        }
+
+        return contents;
+    }
+
+    boolean cacheContainsFile(String fileName)
+    {
+        return _fileName.equals(fileName);
     }
 }
