@@ -1,45 +1,30 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Vector;
-
-import javax.sql.rowset.spi.SyncResolver;
-
 import java.io.*;
 import java.nio.file.Files;
 
 class FileServer extends UnicastRemoteObject implements ServerInterface {
-    private String port;
-    private Vector<File> files;
-    private HashMap<String, FileClient> clientList;
+    private String m_port;
+    private Vector<File> m_files;
 
     FileServer() throws RemoteException {
-        this.port = null;
-        this.files = null;
-        this.clientList = null;
+        m_port = null;
+        m_files = null;
     }
 
     public FileServer(String port) throws RemoteException {
-        this.port = port;
-        this.files = new Vector<>();
-        this.clientList = new HashMap<>();
+        m_port = port;
+        m_files = new Vector<>();
     }
 
     public synchronized FileContents download(String client, String filename, String mode) throws RemoteException {
         System.out.println("Downloading " + filename + " started.");
         FileContents fileContents;
-
-        for (int i = 0; i < this.files.size(); i++) {
-            if (files.elementAt(i).getName() == filename) {
-                for (Map.Entry<String, FileClient> entry : clientList.entrySet()) {
-                    if(entry.getKey() == filename){ //check for write ownership
-
-                    }
-                }
+        for (int i = 0; i < m_files.size(); i++) {
+            if (m_files.elementAt(i).getName() == filename) {
                 try {
-                    fileContents = new FileContents(Files.readAllBytes(files.elementAt(i).toPath()));
+                    fileContents = new FileContents(Files.readAllBytes(m_files.elementAt(i).toPath()));
                     System.out.println("Downloading " + filename + " complete.");
                     return fileContents;
                 } catch (Exception e) {
@@ -55,8 +40,8 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
         // can change a file at a time. change later to check client state??
         System.out.println("Uploading " + filename + " started.");
         FileOutputStream foStream;
-        for (int i = 0; i < this.files.size(); i++) {
-            if (files.elementAt(i).getName() == filename) {
+        for (int i = 0; i < this.m_files.size(); i++) {
+            if (m_files.elementAt(i).getName() == filename) {
                 try {
                     foStream = new FileOutputStream("files/" + filename);
                     foStream.write(contents.get());
@@ -77,7 +62,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             e.printStackTrace();
             return false;
         }
-        files.add(file);
+        m_files.add(file);
         System.out.println("Uploading " + filename + " complete.");
         return true;
     }
