@@ -10,7 +10,7 @@ public class ClientCache {
 
     final Path _cacheFilePath = Paths.get("/tmp/abshirelandron.txt");
     private String _fileName = "";
-    private FileClient.ClientState _state = FileClient.ClientState.INVALID;
+    private FileClientState _state = FileClientState.INVALID;
     private FileMode _fileMode = FileMode.READ;
 
     ClientCache() {
@@ -33,11 +33,11 @@ public class ClientCache {
         _fileName = fileName;
     }
 
-    FileClient.ClientState get_state() {
+    FileClientState get_state() {
         return _state;
     }
 
-    void set_state(FileClient.ClientState state) {
+    void set_state(FileClientState state) {
         _state = state;
         // TODO: Add chmod call here based on state
     }

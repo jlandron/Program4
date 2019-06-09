@@ -34,7 +34,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 if (m_ClientList.containsKey(filename)) {
                     cStates = m_ClientList.get(filename);
                     for (int j = 0; j < cStates.size(); j++) {
-                        if (cStates.elementAt(j).getState() == ClientState.state.WRITE) {
+                        if (cStates.elementAt(j).getState() == FileClientState.WRITE_OWNED) {
                             System.out.println("File is being written to by another user. Download not completed");
                             return null;
                         }
@@ -43,7 +43,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                     // file is not in map
                     cStates = new Vector<>();
                 }
-                cStates.add(new ClientState(client, mode));
+                cStates.add(new ClientState(client, FileClientState.fromId(mode)));
                 m_ClientList.put(filename, cStates);
 
                 try {
@@ -71,13 +71,13 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 if (m_ClientList.containsKey(filename)) {
                     Vector<ClientState> cStates = m_ClientList.get(filename);
                     for (int j = 0; j < cStates.size(); j++) {
-                        if (cStates.elementAt(j).getState() == ClientState.state.READ) {
+                        if (cStates.elementAt(j).getState() == FileClientState.READ_SHARED) {
                             try {
                                 ClientInterface client = (ClientInterface) Naming
                                         .lookup(cStates.elementAt(j).getName());
                                 client.invalidate();
                                 // locally mark that is should be invalid.
-                                cStates.elementAt(j).setState("I");
+                                cStates.elementAt(j).setState(FileClientState.INVALID);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

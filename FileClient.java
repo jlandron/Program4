@@ -8,14 +8,6 @@ import java.io.*;
 
 class FileClient extends UnicastRemoteObject implements ClientInterface {
 
-    public enum ClientState
-    {
-        INVALID,
-        READ_SHARED,
-        WRITE_OWNED,
-        RELEASE_OWNERSHIP
-    }
-
     private BufferedReader m_Reader = null;
 
     private String _fileName = "";   // File to read or write
@@ -46,18 +38,18 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      */
     public boolean invalidate() throws RemoteException {
 
-        if ((_clientCache == null) || (_clientCache.get_state() == ClientState.WRITE_OWNED))
+        if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.WRITE_OWNED))
         {
             return false;
         }
 
-        _clientCache.set_state(ClientState.INVALID);
+        _clientCache.set_state(FileClientState.INVALID);
         return true;
 
     }
 
     public boolean writeback() throws RemoteException {
-        if ((_clientCache == null) || (_clientCache.get_state() != ClientState.RELEASE_OWNERSHIP))
+        if ((_clientCache == null) || (_clientCache.get_state() != FileClientState.RELEASE_OWNERSHIP))
         {
             return false;
         }
@@ -113,7 +105,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
                 {
                     FileContents contents = _server.download(_clientName, _fileName, (_writeMode ? "W" : "R"));
                     _clientCache.createCache(contents);
-                    _clientCache.set_state((_writeMode ? ClientState.WRITE_OWNED : ClientState.READ_SHARED));
+                    _clientCache.set_state((_writeMode ? FileClientState.WRITE_OWNED : FileClientState.READ_SHARED));
                 }
                 catch (RemoteException ex)
                 {

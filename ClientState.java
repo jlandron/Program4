@@ -5,19 +5,19 @@ public class ClientState {
     }
 
     private String m_ClientName;
-    private state m_State;
+    private FileClientState m_State;
 
     ClientState() {
         m_ClientName = null;
-        m_State = ClientState.state.READ;
+        m_State = FileClientState.READ_SHARED;
     }
 
-    ClientState(String clientName, String s) {
+    ClientState(String clientName, FileClientState state) {
         m_ClientName = clientName;
-        setState(s);
+        m_State = state;
     }
 
-    public ClientState.state getState() {
+    public FileClientState getState() {
         return m_State;
 
     }
@@ -26,13 +26,7 @@ public class ClientState {
         return m_ClientName;
     }
 
-    public void setState(String s) {
-        if (s.equalsIgnoreCase("R")) {
-            m_State = ClientState.state.READ;
-        } else if (s.equalsIgnoreCase("W")) {
-            m_State = ClientState.state.WRITE;
-        } else if (s.equalsIgnoreCase("I")) {
-            m_State = ClientState.state.INVALID;
-        }
+    public void setState(FileClientState state) {
+        m_State = state;
     }
 }
