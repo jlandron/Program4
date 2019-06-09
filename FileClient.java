@@ -48,6 +48,14 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    /**
+     * writeback is called by the server, asking the client to write back any
+     * changes that have been done by it.  Only valid if the client cache state is
+     * "RELEASE_OWNERSHIP", meaning it is done with changes.
+     *
+     * @return true is writing back, false otherwise
+     * @throws RemoteException
+     */
     public boolean writeback() throws RemoteException {
         if ((_clientCache == null) || (_clientCache.get_state() != FileClientState.RELEASE_OWNERSHIP))
         {
@@ -90,6 +98,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         _writeMode = keyboard.next().equalsIgnoreCase("W");
     }
 
+    /**
+     * Starts the file client loops of reading or writing files
+     * until the user types "quit" or "exit"
+     */
     private void start()
     {
         System.out.println("Enter \"quit\" or \"exit\" to end the program.");
@@ -98,13 +110,20 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             // Get information from user about file
             getFileInfo();
 
-            // Check cache for file
-            if (!_clientCache.cacheContainsFile(_fileName))
+            // Check cache for file and that it is not invalid
+            if (!_clientCache.cacheContainsFile(_fileName) && _clientCache.get_state() != FileClientState.INVALID)
             {
                 try
                 {
+                    // Attempt to get file and cache it
                     FileContents contents = _server.download(_clientName, _fileName, (_writeMode ? "W" : "R"));
+                    if (contents == null)
+                    {
+                        System.err.println("Unable to get write lock on file: " + _fileName);
+                        continue;
+                    }
                     _clientCache.createCache(contents);
+                    _clientCache.set_fileName(_fileName);
                     _clientCache.set_state((_writeMode ? FileClientState.WRITE_OWNED : FileClientState.READ_SHARED));
                 }
                 catch (RemoteException ex)
@@ -114,6 +133,8 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
                     continue;
                 }
             }
+
+            // Launch editor
         }
     }
 
