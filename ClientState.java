@@ -15,10 +15,9 @@ public class ClientState {
 
     public FileClientState getState() {
         return m_State;
-
     }
 
-    public String getName(){
+    public String getName() {
         return m_ClientName;
     }
 

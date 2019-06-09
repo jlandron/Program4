@@ -1,10 +1,8 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 
 class FileServer extends UnicastRemoteObject implements ServerInterface {
