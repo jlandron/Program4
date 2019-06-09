@@ -1,9 +1,7 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import java.util.Vector;
 import java.io.FileInputStream;
-//import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -21,63 +19,89 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
         m_files = new Vector<>();
     }
 
-    public synchronized FileContents download(String client, String filename, String mode) throws RemoteException {
-        System.out.println("Downloading " + filename + " started.");
-        FileContents fileContents;
+    public FileContents download(String client, String filename, String mode) throws RemoteException {
+        System.out.println("Downloading " + filename + " to " + client + " started.");
+        FileContents fileContents = null;
         FileEntry file = null;
         for (int i = 0; i < m_files.size(); i++) {
             if (m_files.elementAt(i).getName().equals(filename)) {
                 file = m_files.elementAt(i);
             }
         }
-        if (file != null) {
-            if (FileClientState.fromId(mode) == FileClientState.WRITE_OWNED) {
-                file.requestReturn();
-                file.setOwner(client);
-                fileContents = new FileContents(file.getContents());
-                return fileContents;
-            } else if (FileClientState.fromId(mode) == FileClientState.READ_SHARED) {
-            }
-        } else {
+        if (file == null) {
             try {
-                FileInputStream fin = new FileInputStream("files/" + filename);
-                file = new FileEntry(filename, mode);
-                fileContents = new FileContents(Files.readAllBytes(Paths.get("files/" + filename)));
-                file.setContents(fileContents.get());
-                if (FileClientState.fromId(mode) == FileClientState.WRITE_OWNED) {
-
-                }
+                FileInputStream fin = new FileInputStream(filename);
+                file = new FileEntry(filename, ServerState.NOT_SHARED);
+                file.setContents(Files.readAllBytes(Paths.get(filename)));
             } catch (Exception e) {
+                System.err.println("Download failed: " + e.getMessage());
                 e.printStackTrace();
+                return null;
             }
         }
-        try {
-            fileContents = new FileContents(file.getContents());
-            System.out.println("Downloading " + filename + " complete.");
-            return fileContents;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        fileContents = new FileContents(file.getContents());
+        if (ServerState.fromId(mode) == ServerState.READ_SHARED) {
+            file.addReader(client);
+            if (file.getState() == ServerState.NOT_SHARED) {
+                file.setState(ServerState.READ_SHARED);
+            }
         }
+        if (ServerState.fromId(mode) == ServerState.WRITE_SHARED) {
+            file.requestReturn();
+            while (file.getState() == ServerState.OWNERSHIP_CHANGE) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    System.err.println("Download failed: " + e.getMessage());
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        }
+        return fileContents;
     }
+
+    // {
+    // fileContents = new FileContents(file.getContents());
+    // System.out.println("Downloading " + filename +" to " + client + "
+    // complete.");
+    // return fileContents;
+    // }catch(
+    // Exception e)
+    // {
+    // e.printStackTrace();
+    // return null;
+    // }
 
     public synchronized boolean upload(String clientName, String filename, FileContents contents)
             throws RemoteException {
         // check if file exists, if it does, write over file assuming only one client
         // can change a file at a time. change later to check client state??
-        System.out.println("Uploading " + filename + " started.");
+
         FileEntry file = null;
         for (int i = 0; i < this.m_files.size(); i++) {
             if (m_files.elementAt(i).getName().equals(filename)) {
                 file = m_files.elementAt(i);
+                ServerState state = file.getState();
+                if (state == ServerState.WRITE_SHARED || state == ServerState.OWNERSHIP_CHANGE) {
+                    System.out.println("Uploading " + filename + " started.");
+                    file.setContents(contents.get());
+                    file.sendInvalidates();
+                    if (state == ServerState.WRITE_SHARED) {
+                        file.setState(ServerState.NOT_SHARED);
+                    } else if (state == ServerState.OWNERSHIP_CHANGE) {
+                        file.setState(ServerState.WRITE_SHARED);
+                    }
+                } else {
+                    return false;
+                }
             }
         }
         if (file == null) {
-            file = new FileEntry(filename, "R");
+            file = new FileEntry(filename, ServerState.NOT_SHARED);
         }
+
         file.setOwner(clientName);
-        file.sendInvalidates();
-        file.setContents(contents.get());
 
         System.out.println("Uploading " + filename + " complete.");
         return true;
@@ -98,11 +122,14 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
         }
     }
 
+    // give credit
     public void shutDownServer() throws RemoteException {
         try {
             Naming.unbind("rmi://localhost:" + m_port + "/fileserver");
+
             UnicastRemoteObject.unexportObject(this, false);
             Thread.sleep(1000);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

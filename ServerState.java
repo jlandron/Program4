@@ -1,8 +1,8 @@
 /**
  * FileClientState enumeration to determine the state of the client
  */
-public enum FileClientState {
-    INVALID("I"), READ_SHARED("R"), WRITE_OWNED("W"), RELEASE_OWNERSHIP("X");
+public enum ServerState {
+    NOT_SHARED("N"), READ_SHARED("R"), WRITE_SHARED("W"), OWNERSHIP_CHANGE("C");
 
     // Local variable to hold the id of the enum
     private String id;
@@ -12,14 +12,14 @@ public enum FileClientState {
      *
      * @param id The single character value representing the enum
      */
-    FileClientState(String id) {
+    ServerState(String id) {
         this.id = id;
     }
 
     /**
      * Returns the string value of the enum
      *
-     * @return the enum id ("R", "W", "I", "X")
+     * @return the enum id ("R", "W", "N", "C")
      */
     public String getId() {
         return this.id;
@@ -31,8 +31,8 @@ public enum FileClientState {
      * @param id string value of the enum to get.
      * @return FileClientState based on the enum, null otherwise
      */
-    public static FileClientState fromId(String id) {
-        for (FileClientState state : FileClientState.values()) {
+    public static ServerState fromId(String id) {
+        for (ServerState state : ServerState.values()) {
             if (state.id.equalsIgnoreCase(id)) {
                 return state;
             }

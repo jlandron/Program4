@@ -1,13 +1,11 @@
 import java.rmi.Naming;
 import java.util.Vector;
 
-import javax.sql.rowset.spi.SyncResolver;
-
 public class FileEntry {
     private String m_FileName;
     private Vector<String> m_Readers;
     private String m_Owner;
-    private FileClientState m_State;
+    private ServerState m_State;
     private byte[] m_Data;
 
     public FileEntry() {
@@ -18,12 +16,12 @@ public class FileEntry {
         m_State = null;
     }
 
-    public FileEntry(String filename, String id) {
+    public FileEntry(String filename, ServerState state) {
         m_Data = null;
         m_FileName = filename;
         m_Readers = new Vector<>();
         m_Owner = null;
-        m_State = FileClientState.fromId(id);
+        m_State = state;
     }
 
     public synchronized boolean addReader(String reader) {
@@ -38,17 +36,27 @@ public class FileEntry {
         return true;
     }
 
+    public synchronized boolean removeReader(String reader) {
+        for (int i = 0; i < m_Readers.size(); i++) {
+            if (m_Readers.elementAt(i).equals(reader)) {
+                m_Readers.removeElementAt(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public synchronized void setOwner(String owner) {
         m_Owner = owner;
-        m_State = FileClientState.WRITE_OWNED;
+        m_State = ServerState.WRITE_SHARED;
     }
 
     public synchronized void setContents(byte[] contents) {
         m_Data = contents.clone();
     }
 
-    public synchronized void setState(String id) {
-        m_State = FileClientState.fromId(id);
+    public synchronized void setState(ServerState state) {
+        m_State = state;
     }
 
     public byte[] getContents() {
@@ -67,10 +75,15 @@ public class FileEntry {
         return m_Readers;
     }
 
+    public ServerState getState() {
+        return m_State;
+    }
+
     public void sendInvalidates() {
         for (int i = 0; i < m_Readers.size(); i++) {
             try {
-                ClientInterface cInterface = (ClientInterface) Naming.lookup(m_Readers.elementAt(i));
+                ClientInterface cInterface = (ClientInterface) Naming
+                        .lookup("rmi://" + m_Readers.elementAt(i) + "/fileclient");
                 cInterface.invalidate();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -82,6 +95,7 @@ public class FileEntry {
 
     public void requestReturn() {
         try {
+            m_State = ServerState.fromId("C");
             ClientInterface cInterface = (ClientInterface) Naming.lookup(m_Owner);
             cInterface.writeback();
         } catch (Exception e) {
@@ -89,7 +103,5 @@ public class FileEntry {
             System.out.println("Removing owner " + m_Owner + " Due to error.");
             m_Owner = null;
         }
-        m_State = FileClientState.fromId("X");
-        m_Owner = null;
     }
 }
