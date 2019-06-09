@@ -19,13 +19,12 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
     protected FileClient() throws RemoteException {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     public FileClient(String ipAddress, String port)
             throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException
     {
-       // _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
+        _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
         _clientCache = new ClientCache();
         _clientName = InetAddress.getLocalHost().getHostName();
     }
@@ -34,7 +33,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      * Will invalidate the current file in the cache if there is one
      *
      * @return True if file is invalidated, false otherwise
-     * @throws RemoteException
+     * @throws RemoteException if something happens on call
      */
     public boolean invalidate() throws RemoteException {
 
@@ -45,30 +44,24 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
         _clientCache.set_state(FileClientState.INVALID);
         return true;
-
     }
 
     /**
-     * writeback is called by the server, asking the client to write back any
-     * changes that have been done by it.  Only valid if the client cache state is
-     * "RELEASE_OWNERSHIP", meaning it is done with changes.
+     * writeback is called by the server, telling client to write back
+     * the file after done with the current edit.  Only valid in WRITE_SHARED
      *
-     * @return true is writing back, false otherwise
-     * @throws RemoteException
+     * @return true if valid state transition, false otherwise
+     * @throws RemoteException on RMI error
      */
     public boolean writeback() throws RemoteException {
-        if ((_clientCache == null) || (_clientCache.get_state() != FileClientState.RELEASE_OWNERSHIP))
+        if ((_clientCache == null) ||
+                (_clientCache.get_state() == FileClientState.INVALID) ||
+                (_clientCache.get_state() == FileClientState.READ_SHARED))
         {
             return false;
         }
 
-        FileContents contents = _clientCache.getCache();
-        if (contents == null)
-        {
-            return false;
-        }
-
-        _server.upload(_clientName, _fileName, contents);
+        _clientCache.set_state(FileClientState.RELEASE_OWNERSHIP);
         return true;
     }
 
@@ -77,8 +70,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      *
      * Gets the info about the file that the user wants to read or write to
      * Exits the program if the user types "exit" or "quit"
+     *
+     * @return boolean true if user wants to exit, false otherwise
      */
-    private void getFileInfo()
+    private boolean getFileInfo()
     {
         // Initialize keyboard
         Scanner keyboard = new Scanner(System.in);
@@ -90,12 +85,14 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         // check for exit
         if (_fileName.equalsIgnoreCase("exit") || _fileName.equalsIgnoreCase("quit"))
         {
-            System.exit(0);
+            // Want to exit
+            return true;
         }
 
         // Get read/write mode
         System.out.print("(R)ead or (W)rite mode: ");
         _writeMode = keyboard.next().equalsIgnoreCase("W");
+        return false;
     }
 
     /**
@@ -104,38 +101,127 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      */
     private void start()
     {
+        boolean exit;
+
         System.out.println("Enter \"quit\" or \"exit\" to end the program.");
         while (true)
         {
             // Get information from user about file
-            getFileInfo();
+            exit = getFileInfo();
 
-            // Check cache for file and that it is not invalid
-            if (!_clientCache.cacheContainsFile(_fileName) && _clientCache.get_state() != FileClientState.INVALID)
+            // If exiting, upload any file in write mode or release mode
+            if (exit)
             {
-                try
+                if ((_clientCache != null) &&
+                        ((_clientCache.get_state() == FileClientState.WRITE_OWNED) ||
+                         (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP)))
                 {
-                    // Attempt to get file and cache it
-                    FileContents contents = _server.download(_clientName, _fileName, (_writeMode ? "W" : "R"));
-                    if (contents == null)
+                    if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache()))
                     {
-                        System.err.println("Unable to get write lock on file: " + _fileName);
+                        System.err.println("Error uploading file on exit: " + _clientCache.get_fileName());
+                    }
+                }
+                System.exit(0);
+            }
+
+            // Check if cache doesn't contain the file user wants or that it is invalid
+            if (!_clientCache.cacheContainsFile(_fileName) || _clientCache.get_state() == FileClientState.INVALID)
+            {
+                // If new file, check if cache is in write mode and upload the current file
+                if (_clientCache.get_state() == FileClientState.WRITE_OWNED)
+                {
+                    if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache()))
+                    {
+                        // Error uploading the file to server, skip new download.
+                        System.err.println("Upload failed: " + _clientCache.get_fileName());
                         continue;
                     }
-                    _clientCache.createCache(contents);
-                    _clientCache.set_fileName(_fileName);
-                    _clientCache.set_state((_writeMode ? FileClientState.WRITE_OWNED : FileClientState.READ_SHARED));
                 }
-                catch (RemoteException ex)
+
+                // Attempt to get file and cache it
+                FileContents contents = downloadFile(_fileName, _writeMode);
+                if (contents == null)
                 {
-                    System.err.println("Error downloading file: " + _fileName);
-                    System.err.println("Error: " + ex.getMessage());
+                    System.err.println("Unable to download file: " + _fileName);
                     continue;
+                }
+                _clientCache.createCache(contents);
+                _clientCache.set_fileName(_fileName);
+                _clientCache.set_state((_writeMode ? FileClientState.WRITE_OWNED : FileClientState.READ_SHARED));
+            }
+            // Cache contains the file and it's not invalid
+            else
+            {
+                // Check if switching from read to write
+                if (_writeMode && (_clientCache.get_state() == FileClientState.READ_SHARED))
+                {
+                    FileContents contents = downloadFile(_fileName, _writeMode);
+                    if (contents == null)
+                    {
+                        System.err.println("Unable to switch to write mode: " + _fileName);
+                        continue;
+                    }
+                    _clientCache.set_state(FileClientState.WRITE_OWNED);
                 }
             }
 
             // Launch editor
+            // TODO: Launch Editor
+
+            // Check post-edit for upload request
+            if (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP)
+            {
+                if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache()))
+                {
+                    System.err.println("Upload failed:" + _clientCache.get_fileName());
+                    continue;
+                }
+                _clientCache.set_state(FileClientState.READ_SHARED);
+            }
         }
+    }
+
+    /**
+     *
+     * @param fileName
+     * @param writeMode
+     * @return
+     */
+    private FileContents downloadFile(String fileName, boolean writeMode)
+    {
+        FileContents contents = null;
+        try
+        {
+            contents = _server.download(_clientName, fileName, (writeMode ? "W" : "R"));
+        }
+        catch (RemoteException ex)
+        {
+            System.err.println("Error downloading from server: " + ex.getMessage());
+        }
+
+        return contents;
+    }
+
+    /**
+     *
+     * @param fileName
+     * @param contents
+     * @return
+     */
+    private boolean uploadFile(String fileName, FileContents contents)
+    {
+        boolean result;
+        try
+        {
+            result = _server.upload(_clientName, fileName, contents);
+        }
+        catch (RemoteException ex)
+        {
+            System.err.println("Error uploading to server: " + ex.getMessage());
+            result = false;
+        }
+
+        return result;
     }
 
     /**
