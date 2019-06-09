@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ClientCache
 {
@@ -9,7 +10,7 @@ public class ClientCache
         WRITE
     }
 
-    final Path _cacheFilePath = Path.of("/tmp/abshirelandron.txt");
+    final Path _cacheFilePath = Paths.get("/tmp/abshirelandron.txt");
     private String _fileName = "";
     private FileClient.ClientState _state = FileClient.ClientState.INVALID;
     private FileMode _fileMode = FileMode.READ;

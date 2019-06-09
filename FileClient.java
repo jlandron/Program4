@@ -103,8 +103,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         System.out.println("Enter \"quit\" or \"exit\" to end the program.");
         while (true)
         {
+            // Get information from user about file
             getFileInfo();
 
+            // Check cache for file
             if (!_clientCache.cacheContainsFile(_fileName))
             {
                 try
