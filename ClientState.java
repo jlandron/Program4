@@ -1,9 +1,5 @@
 public class ClientState {
 
-    public enum state {
-        READ, WRITE, INVALID
-    }
-
     private String m_ClientName;
     private FileClientState m_State;
 
@@ -19,10 +15,9 @@ public class ClientState {
 
     public FileClientState getState() {
         return m_State;
-
     }
 
-    public String getName(){
+    public String getName() {
         return m_ClientName;
     }
 
