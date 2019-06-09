@@ -10,20 +10,18 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
     private BufferedReader m_Reader = null;
 
-    private String _fileName = "";   // File to read or write
+    private String _fileName = ""; // File to read or write
     private boolean _writeMode = false; // Access mode for the file
     private ServerInterface _server = null;
     private ClientCache _clientCache = null;
     private String _clientName = "";
-
 
     protected FileClient() throws RemoteException {
         super();
     }
 
     public FileClient(String ipAddress, String port)
-            throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException
-    {
+            throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException {
         _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
         _clientCache = new ClientCache();
         _clientName = InetAddress.getLocalHost().getHostName();
@@ -37,8 +35,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      */
     public boolean invalidate() throws RemoteException {
 
-        if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.WRITE_OWNED))
-        {
+        if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.WRITE_OWNED)) {
             return false;
         }
 
@@ -47,17 +44,15 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     }
 
     /**
-     * writeback is called by the server, telling client to write back
-     * the file after done with the current edit.  Only valid in WRITE_SHARED
+     * writeback is called by the server, telling client to write back the file
+     * after done with the current edit. Only valid in WRITE_SHARED
      *
      * @return true if valid state transition, false otherwise
      * @throws RemoteException on RMI error
      */
     public boolean writeback() throws RemoteException {
-        if ((_clientCache == null) ||
-                (_clientCache.get_state() == FileClientState.INVALID) ||
-                (_clientCache.get_state() == FileClientState.READ_SHARED))
-        {
+        if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.INVALID)
+                || (_clientCache.get_state() == FileClientState.READ_SHARED)) {
             return false;
         }
 
@@ -68,23 +63,21 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     /***
      * getFileInfo
      *
-     * Gets the info about the file that the user wants to read or write to
-     * Exits the program if the user types "exit" or "quit"
+     * Gets the info about the file that the user wants to read or write to Exits
+     * the program if the user types "exit" or "quit"
      *
      * @return boolean true if user wants to exit, false otherwise
      */
-    private boolean getFileInfo()
-    {
+    private boolean getFileInfo() {
         // Initialize keyboard
         Scanner keyboard = new Scanner(System.in);
 
         // Get file name
         System.out.print("Enter file name: ");
-        _fileName  = keyboard.next();
+        _fileName = keyboard.next();
 
         // check for exit
-        if (_fileName.equalsIgnoreCase("exit") || _fileName.equalsIgnoreCase("quit"))
-        {
+        if (_fileName.equalsIgnoreCase("exit") || _fileName.equalsIgnoreCase("quit")) {
             // Want to exit
             return true;
         }
@@ -96,11 +89,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     }
 
     /**
-     * Starts the file client loops of reading or writing files
-     * until the user types "quit" or "exit"
+     * Starts the file client loops of reading or writing files until the user types
+     * "quit" or "exit"
      */
-    private void start()
-    {
+    private void start() {
         boolean exit;
 
         System.out.println("Enter \"quit\" or \"exit\" to end the program.");
@@ -110,9 +102,8 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
             // If exiting, upload any file in write mode or release mode
             if (exit) {
-                if ((_clientCache != null) &&
-                        ((_clientCache.get_state() == FileClientState.WRITE_OWNED) ||
-                                (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP))) {
+                if ((_clientCache != null) && ((_clientCache.get_state() == FileClientState.WRITE_OWNED)
+                        || (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP))) {
                     if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                         System.err.println("Error uploading file on exit: " + _clientCache.get_fileName());
                     }
@@ -158,17 +149,13 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             // Launch editor
             try {
                 UnixTools.runEmacs(_clientCache.getCacheName());
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 System.err.println("Error opening emacs: " + ex.getMessage());
             }
 
             // Check post-edit for upload request
-            if (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP)
-            {
-                if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache()))
-                {
+            if (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP) {
+                if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                     System.err.println("Upload failed:" + _clientCache.get_fileName());
                     continue;
                 }
@@ -183,15 +170,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      * @param writeMode
      * @return
      */
-    private FileContents downloadFile(String fileName, boolean writeMode)
-    {
+    private FileContents downloadFile(String fileName, boolean writeMode) {
         FileContents contents = null;
-        try
-        {
+        try {
             contents = _server.download(_clientName, fileName, (writeMode ? "W" : "R"));
-        }
-        catch (RemoteException ex)
-        {
+        } catch (RemoteException ex) {
             System.err.println("Error downloading from server: " + ex.getMessage());
         }
 
@@ -204,15 +187,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      * @param contents
      * @return
      */
-    private boolean uploadFile(String fileName, FileContents contents)
-    {
+    private boolean uploadFile(String fileName, FileContents contents) {
         boolean result;
-        try
-        {
+        try {
             result = _server.upload(_clientName, fileName, contents);
-        }
-        catch (RemoteException ex)
-        {
+        } catch (RemoteException ex) {
             System.err.println("Error uploading to server: " + ex.getMessage());
             result = false;
         }
@@ -220,36 +199,31 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         return result;
     }
 
-/**
- * Main entry point for FileClient class
- *
- * @param args command line parameters, ipaddress/host and port
- */
-public static void main(String[] args)
-        {
+    /**
+     * Main entry point for FileClient class
+     *
+     * @param args command line parameters, ipaddress/host and port
+     */
+    public static void main(String[] args) {
         // Check command line arguments
-        if (args.length != 2)
-        {
-        System.out.println("java FileClient [serverIp] [port]");
-        System.exit(-1);
+        if (args.length != 2) {
+            System.out.println("java FileClient [serverIp] [port]");
+            System.exit(-1);
         }
 
         FileClient client = null;
 
         // Attempt to create file client, exit on error
-        try
-        {
-        client = new FileClient(args[0], args[1]);
-        Naming.rebind("rmi://localhost:" + args[1] + "/fileclient",client);
-        System.out.println("rmi://localhost:" + args[1] + "/fileclient invoked, client ready.");
-        }
-        catch (RemoteException | NotBoundException | MalformedURLException | UnknownHostException ex)
-        {
-        System.err.println("Error creating file client: " + ex.getMessage());
-        System.exit(-1);
+        try {
+            client = new FileClient(args[0], args[1]);
+            Naming.rebind("rmi://localhost:" + args[1] + "/fileclient", client);
+            System.out.println("rmi://localhost:" + args[1] + "/fileclient invoked, client ready.");
+        } catch (RemoteException | NotBoundException | MalformedURLException | UnknownHostException ex) {
+            System.err.println("Error creating file client: " + ex.getMessage());
+            System.exit(-1);
         }
 
         // Start client execution until user types "quit" or "exit" for filename
         client.start();
-        }
-        }
+    }
+}

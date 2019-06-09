@@ -4,12 +4,13 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 class FileServer extends UnicastRemoteObject implements ServerInterface {
+    private boolean m_IsActive = true;
     private String m_port;
+    private int m_ShutdownCode = 1234;
     private Vector<FileEntry> m_files;
     private Queue<String> m_ClientQueue;
 
@@ -26,6 +27,10 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
     }
 
     public FileContents download(String client, String filename, String mode) throws RemoteException {
+        // check if server is being shutdown. No new requests.
+        if (!m_IsActive) {
+            return null;
+        }
         System.out.println("Downloading " + filename + " to " + client + " started.");
         FileContents fileContents = null;
         FileEntry file = null;
@@ -131,18 +136,40 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
     }
 
     // give credit
-    public void shutDownServer() throws RemoteException {
+    public void shutDownServer(int code) throws RemoteException {
+        if (code != m_ShutdownCode) {
+            System.err.println("Unauthorized call to shutdown server");
+            return;
+        }
         try {
+            m_IsActive = false;
+            for (int i = 0; i < m_files.size(); i++) {
+                if (m_files.elementAt(i).getState() == ServerState.WRITE_SHARED) {
+                    m_files.elementAt(i).requestReturn();
+                }
+            }
+            while (anyFilesBeingWritten()) {
+                Thread.sleep(1000);
+            }
+
             Naming.unbind("rmi://localhost:" + m_port + "/fileserver");
 
-            UnicastRemoteObject.unexportObject(this, false);
-            Thread.sleep(1000);
+            UnicastRemoteObject.unexportObject(this, true);
 
         } catch (Exception e) {
             System.err.println("Failed to shutdown due to error: " + e.getMessage());
             e.printStackTrace();
         }
         System.out.println("Server shut down gracefully");
-        System.exit(0);
+        return;
+    }
+
+    private boolean anyFilesBeingWritten() {
+        for (int i = 0; i < m_files.size(); i++) {
+            if (m_files.elementAt(i).getState() == ServerState.OWNERSHIP_CHANGE) {
+                return true;
+            }
+        }
+        return false;
     }
 }

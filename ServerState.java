@@ -1,5 +1,5 @@
 /**
- * FileClientState enumeration to determine the state of the client
+ * ServerState enumeration to determine the state of the files in the server
  */
 public enum ServerState {
     NOT_SHARED("N"), READ_SHARED("R"), WRITE_SHARED("W"), OWNERSHIP_CHANGE("C");

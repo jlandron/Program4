@@ -4,30 +4,23 @@ import java.io.IOException;
 /**
  * Class to hold Unix tools
  */
-public class UnixTools
-{
+public class UnixTools {
     /**
-     *  Using ProcessBuilder because terminal windows suck
-     *  Taken off discussion boards because I was going to
-     *  do the same thing.
+     * Using ProcessBuilder because terminal windows suck Taken off discussion
+     * boards because I was going to do the same thing.
      *
      * @param fileName Name of file to open in emacs
      * @return int containing exit code
-     * @throws IOException Exception due to IO
+     * @throws IOException          Exception due to IO
      * @throws InterruptedException Process Interrupted
      */
-    public static int runEmacs(String fileName)
-            throws IOException, InterruptedException
-    {
+    public static int runEmacs(String fileName) throws IOException, InterruptedException {
         // Create the command array.
         String editor;
 
-        if (System.getProperty("os.name").startsWith("Windows"))
-        {
+        if (System.getProperty("os.name").startsWith("Windows")) {
             editor = "notepad";
-        }
-        else
-        {
+        } else {
             editor = "emacs";
         }
 
@@ -44,8 +37,7 @@ public class UnixTools
         return pb.start().waitFor();
     }
 
-    public static boolean changeFileMode(String fileName, boolean writeAble)
-    {
+    public static boolean changeFileMode(String fileName, boolean writeAble) {
         boolean result = true;
 
         File cacheFile = new File(fileName);
