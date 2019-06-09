@@ -1,8 +1,10 @@
 import java.io.*;
-import java.util.*;
 
 public class FileContents implements Serializable {
     private byte[] contents;
+    public FileContents(){
+        this.contents = null;
+    }
 
     public FileContents(byte[] contents) {
         this.contents = contents;
