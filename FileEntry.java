@@ -95,7 +95,7 @@ public class FileEntry {
 
     public void requestReturn() {
         try {
-            ClientInterface cInterface = (ClientInterface) Naming.lookup(m_Owner);
+            ClientInterface cInterface = (ClientInterface) Naming.lookup("rmi://" + m_Owner + "/fileclient");
             cInterface.writeback();
             m_State = ServerState.OWNERSHIP_CHANGE;
         } catch (Exception e) {
