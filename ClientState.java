@@ -1,15 +1,15 @@
 public class ClientState {
 
-    private String m_ClientName;
+    // private String m_ClientName;
     private FileClientState m_State;
 
     ClientState() {
-        m_ClientName = null;
+        // m_ClientName = null;
         m_State = FileClientState.READ_SHARED;
     }
 
-    ClientState(String clientName, FileClientState state) {
-        m_ClientName = clientName;
+    ClientState(FileClientState state) {
+        // m_ClientName = clientName;
         m_State = state;
     }
 
@@ -17,9 +17,9 @@ public class ClientState {
         return m_State;
     }
 
-    public String getName() {
-        return m_ClientName;
-    }
+    // public String getName() {
+    //     return m_ClientName;
+    // }
 
     public void setState(FileClientState state) {
         m_State = state;
