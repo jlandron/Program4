@@ -104,20 +104,16 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         boolean exit;
 
         System.out.println("Enter \"quit\" or \"exit\" to end the program.");
-        while (true)
-        {
+        while (true) {
             // Get information from user about file
             exit = getFileInfo();
 
             // If exiting, upload any file in write mode or release mode
-            if (exit)
-            {
+            if (exit) {
                 if ((_clientCache != null) &&
                         ((_clientCache.get_state() == FileClientState.WRITE_OWNED) ||
-                         (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP)))
-                {
-                    if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache()))
-                    {
+                                (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP))) {
+                    if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                         System.err.println("Error uploading file on exit: " + _clientCache.get_fileName());
                     }
                 }
@@ -125,13 +121,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             }
 
             // Check if cache doesn't contain the file user wants or that it is invalid
-            if (!_clientCache.cacheContainsFile(_fileName) || _clientCache.get_state() == FileClientState.INVALID)
-            {
+            if (!_clientCache.cacheContainsFile(_fileName) || _clientCache.get_state() == FileClientState.INVALID) {
                 // If new file, check if cache is in write mode and upload the current file
-                if (_clientCache.get_state() == FileClientState.WRITE_OWNED)
-                {
-                    if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache()))
-                    {
+                if (_clientCache.get_state() == FileClientState.WRITE_OWNED) {
+                    if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                         // Error uploading the file to server, skip new download.
                         System.err.println("Upload failed: " + _clientCache.get_fileName());
                         continue;
@@ -140,8 +133,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
                 // Attempt to get file and cache it
                 FileContents contents = downloadFile(_fileName, _writeMode);
-                if (contents == null)
-                {
+                if (contents == null) {
                     System.err.println("Unable to download file: " + _fileName);
                     continue;
                 }
@@ -150,14 +142,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
                 _clientCache.set_state((_writeMode ? FileClientState.WRITE_OWNED : FileClientState.READ_SHARED));
             }
             // Cache contains the file and it's not invalid
-            else
-            {
+            else {
                 // Check if switching from read to write
-                if (_writeMode && (_clientCache.get_state() == FileClientState.READ_SHARED))
-                {
+                if (_writeMode && (_clientCache.get_state() == FileClientState.READ_SHARED)) {
                     FileContents contents = downloadFile(_fileName, _writeMode);
-                    if (contents == null)
-                    {
+                    if (contents == null) {
                         System.err.println("Unable to switch to write mode: " + _fileName);
                         continue;
                     }
@@ -166,7 +155,13 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             }
 
             // Launch editor
-            // TODO: Launch Editor
+            try {
+                UnixTools.runEmacs(_fileName);
+            }
+            catch (Exception ex)
+            {
+                System.err.println("Error opening emacs: " + ex.getMessage());
+            }
 
             // Check post-edit for upload request
             if (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP)
@@ -224,18 +219,18 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         return result;
     }
 
-    /**
-     * Main entry point for FileClient class
-     *
-     * @param args command line parameters, ipaddress/host and port
-     */
-    public static void main(String[] args)
-    {
+/**
+ * Main entry point for FileClient class
+ *
+ * @param args command line parameters, ipaddress/host and port
+ */
+public static void main(String[] args)
+        {
         // Check command line arguments
         if (args.length != 2)
         {
-            System.out.println("java FileClient [serverIp] [port]");
-            System.exit(-1);
+        System.out.println("java FileClient [serverIp] [port]");
+        System.exit(-1);
         }
 
         FileClient client = null;
@@ -243,17 +238,17 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         // Attempt to create file client, exit on error
         try
         {
-            client = new FileClient(args[0], args[1]);
-            Naming.rebind("rmi://localhost:" + args[1] + "/fileclient",client);
-            System.out.println("rmi://localhost:" + args[1] + "/fileclient invoked, client ready.");
+        client = new FileClient(args[0], args[1]);
+        Naming.rebind("rmi://localhost:" + args[1] + "/fileclient",client);
+        System.out.println("rmi://localhost:" + args[1] + "/fileclient invoked, client ready.");
         }
         catch (RemoteException | NotBoundException | MalformedURLException | UnknownHostException ex)
         {
-            System.err.println("Error creating file client: " + ex.getMessage());
-            System.exit(-1);
+        System.err.println("Error creating file client: " + ex.getMessage());
+        System.exit(-1);
         }
 
         // Start client execution until user types "quit" or "exit" for filename
         client.start();
-    }
-}
+        }
+        }

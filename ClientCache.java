@@ -46,9 +46,16 @@ public class ClientCache {
      */
     void set_state(FileClientState state) {
         _state = state;
-        // TODO: Add chmod call here based on state
+
+        UnixTools.changeFileMode(_cacheFilePath.toString(),
+                (_state == FileClientState.WRITE_OWNED));
     }
 
+    /**
+     *
+     * @param contents
+     * @return
+     */
     boolean createCache(FileContents contents) {
         try
         {
@@ -56,12 +63,17 @@ public class ClientCache {
         }
         catch (IOException ex)
         {
+            System.err.println("Error creating cache: " + ex.getMessage());
             return false;
         }
 
         return true;
     }
 
+    /**
+     *
+     * @return
+     */
     FileContents getCache() {
         FileContents contents = null;
         try
@@ -70,12 +82,18 @@ public class ClientCache {
         }
         catch (IOException ex)
         {
+            System.err.println("Error retreiving cache:" + ex.getMessage());
             return null;
         }
 
         return contents;
     }
 
+    /**
+     *
+     * @param fileName
+     * @return
+     */
     boolean cacheContainsFile(String fileName) {
         return _fileName.equals(fileName);
     }
