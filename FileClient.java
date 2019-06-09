@@ -137,6 +137,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
                     System.err.println("Unable to download file: " + _fileName);
                     continue;
                 }
+                _clientCache.clearCache();
                 _clientCache.createCache(contents);
                 _clientCache.set_fileName(_fileName);
                 _clientCache.set_state((_writeMode ? FileClientState.WRITE_OWNED : FileClientState.READ_SHARED));
@@ -156,7 +157,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
             // Launch editor
             try {
-                UnixTools.runEmacs(_fileName);
+                UnixTools.runEmacs(_clientCache.getCacheName());
             }
             catch (Exception ex)
             {

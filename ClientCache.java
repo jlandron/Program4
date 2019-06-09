@@ -5,11 +5,49 @@ import java.nio.file.Paths;
 
 public class ClientCache {
 
-    final Path _cacheFilePath = Paths.get("/tmp/abshirelandron.txt");
+    final String tempDir = System.getProperty("java.io.tmpdir");
+    final Path _cacheFilePath = Paths.get(tempDir +"abshirelandron.txt");
     private String _fileName = "";
     private FileClientState _state = FileClientState.INVALID;
 
-    ClientCache() {}
+    ClientCache()
+    {
+        if (Files.exists(_cacheFilePath))
+        {
+            try {
+                Files.delete(_cacheFilePath);
+            }
+            catch (IOException ex)
+            {
+                System.err.println("Error clearing cache: " + ex.getMessage());
+            }
+        }
+    }
+
+    public boolean clearCache()
+    {
+        try {
+            if (Files.exists(_cacheFilePath)) {
+                UnixTools.changeFileMode(_cacheFilePath.toString(), true);
+                Files.delete(_cacheFilePath);
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            System.err.println("Error clearing cache: " + ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get the name of the file cache
+     *
+     * @return Location of the file cache as a string
+     */
+    String getCacheName() {
+        return _cacheFilePath.toString();
+    }
 
     /**
      * Gets file name of the file stored in cache
