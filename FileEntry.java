@@ -86,8 +86,8 @@ public class FileEntry {
                         .lookup("rmi://" + m_Readers.elementAt(i) + "/fileclient");
                 cInterface.invalidate();
             } catch (Exception e) {
+                System.out.println("Removing reader " + m_Readers.elementAt(i) + " Due to error: " + e.getMessage());
                 e.printStackTrace();
-                System.out.println("Removing reader " + m_Readers.elementAt(i) + " Due to error.");
                 m_Readers.removeElementAt(i);
             }
         }

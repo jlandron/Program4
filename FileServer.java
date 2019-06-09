@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -46,7 +47,6 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 return null;
             }
         }
-
         if (ServerState.fromId(mode) == ServerState.READ_SHARED) {
             file.addReader(client);
             if (file.getState() == ServerState.NOT_SHARED) {
@@ -85,9 +85,6 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
 
     public synchronized boolean upload(String clientName, String filename, FileContents contents)
             throws RemoteException {
-        // check if file exists, if it does, write over file assuming only one client
-        // can change a file at a time. change later to check client state??
-
         FileEntry file = null;
         for (int i = 0; i < this.m_files.size(); i++) {
             if (m_files.elementAt(i).getName().equals(filename)) {
@@ -107,11 +104,11 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 }
             }
         }
-        if (file == null) {
-            file = new FileEntry(filename, ServerState.NOT_SHARED);
-        }
 
-        file.setOwner(clientName);
+        if (file == null) {
+            System.err.println("Upload failed due to stated file not existing");
+            return false;
+        }
 
         System.out.println("Uploading " + filename + " complete.");
         return true;
@@ -127,6 +124,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             Naming.rebind(("rmi://localhost:" + args[0] + "/fileserver"), fileServer);
             System.out.println("rmi://localhost:" + args[0] + "/fileserver started.");
         } catch (Exception e) {
+            System.err.println("Failed to start server due to error: " + e.getMessage());
             e.printStackTrace();
             System.exit(-2);
         }
@@ -141,9 +139,10 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             Thread.sleep(1000);
 
         } catch (Exception e) {
+            System.err.println("Failed to shutdown due to error: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("server shut down gracefully");
+        System.out.println("Server shut down gracefully");
         System.exit(0);
     }
 }
