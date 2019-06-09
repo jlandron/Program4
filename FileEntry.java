@@ -95,12 +95,12 @@ public class FileEntry {
 
     public void requestReturn() {
         try {
-            m_State = ServerState.fromId("C");
             ClientInterface cInterface = (ClientInterface) Naming.lookup(m_Owner);
             cInterface.writeback();
+            m_State = ServerState.OWNERSHIP_CHANGE;
         } catch (Exception e) {
+            System.out.println("Removing owner " + m_Owner + " Due to error: " + e.getMessage());
             e.printStackTrace();
-            System.out.println("Removing owner " + m_Owner + " Due to error.");
             m_Owner = null;
         }
     }

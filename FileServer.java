@@ -1,5 +1,7 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Vector;
 import java.io.FileInputStream;
 import java.nio.file.Files;
@@ -8,15 +10,18 @@ import java.nio.file.Paths;
 class FileServer extends UnicastRemoteObject implements ServerInterface {
     private String m_port;
     private Vector<FileEntry> m_files;
+    private Queue<String> m_ClientQueue;
 
     FileServer() throws RemoteException {
         m_port = null;
         m_files = null;
+        m_ClientQueue = null;
     }
 
     public FileServer(String port) throws RemoteException {
         m_port = port;
         m_files = new Vector<>();
+        m_ClientQueue = new LinkedList<>();
     }
 
     public FileContents download(String client, String filename, String mode) throws RemoteException {
@@ -27,6 +32,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             if (m_files.elementAt(i).getName().equals(filename)) {
                 file = m_files.elementAt(i);
             }
+            m_files.elementAt(i).removeReader(client);
         }
         if (file == null) {
             try {
@@ -45,18 +51,32 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             if (file.getState() == ServerState.NOT_SHARED) {
                 file.setState(ServerState.READ_SHARED);
             }
-        }
-        if (ServerState.fromId(mode) == ServerState.WRITE_SHARED) {
-            file.requestReturn();
-            while (file.getState() == ServerState.OWNERSHIP_CHANGE) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    System.err.println("Download failed: " + e.getMessage());
-                    e.printStackTrace();
-                    return null;
+        } else if (ServerState.fromId(mode) == ServerState.WRITE_SHARED) {
+            // add client to queue by default
+            m_ClientQueue.add(client);
+            // check state
+            while (true) {
+                // check if file is unshared or just being read
+                if (file.getState() == ServerState.NOT_SHARED || file.getState() == ServerState.READ_SHARED) {
+                    file.setState(ServerState.WRITE_SHARED);
+                    break;
+                } // check if file is in
+                else if (file.getState() == ServerState.WRITE_SHARED) {
+                    if (m_ClientQueue.peek().equals(client)) {
+                        file.requestReturn();
+                        break;
+                    }
+                }
+                if (file.getState() == ServerState.OWNERSHIP_CHANGE) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (Exception e) {
+                        System.err.println("Error Downloading: " + e.getMessage());
+                        e.printStackTrace();
+                    }
                 }
             }
+            file.setOwner(m_ClientQueue.remove());
         }
         return fileContents;
     }
