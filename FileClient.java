@@ -24,7 +24,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException {
         _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
         _clientCache = new ClientCache();
-        _clientName = InetAddress.getLocalHost().getHostName();
+        _clientName = (InetAddress.getLocalHost().getHostName() + ":" + port);
     }
 
     /**

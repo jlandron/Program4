@@ -26,6 +26,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
         m_ClientQueue = new LinkedList<>();
     }
 
+
     public FileContents download(String client, String filename, String mode) throws RemoteException {
         // check if server is being shutdown. No new requests.
         if (!m_IsActive) {

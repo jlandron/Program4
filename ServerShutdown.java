@@ -2,8 +2,6 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 public class ServerShutdown extends UnicastRemoteObject {
@@ -28,6 +26,5 @@ public class ServerShutdown extends UnicastRemoteObject {
             System.err.println("Error shutting down server: " + e.getMessage());
             System.exit(-1);
         }
-
     }
 }
