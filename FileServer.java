@@ -39,6 +39,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 FileInputStream fin = new FileInputStream(filename);
                 file = new FileEntry(filename, ServerState.NOT_SHARED);
                 file.setContents(Files.readAllBytes(Paths.get(filename)));
+                m_files.add(file);
             } catch (Exception e) {
                 System.err.println("Download failed: " + e.getMessage());
                 e.printStackTrace();
