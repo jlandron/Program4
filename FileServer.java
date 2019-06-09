@@ -45,7 +45,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 return null;
             }
         }
-        fileContents = new FileContents(file.getContents());
+
         if (ServerState.fromId(mode) == ServerState.READ_SHARED) {
             file.addReader(client);
             if (file.getState() == ServerState.NOT_SHARED) {
@@ -78,20 +78,9 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             }
             file.setOwner(m_ClientQueue.remove());
         }
+        fileContents = new FileContents(file.getContents());
         return fileContents;
     }
-
-    // {
-    // fileContents = new FileContents(file.getContents());
-    // System.out.println("Downloading " + filename +" to " + client + "
-    // complete.");
-    // return fileContents;
-    // }catch(
-    // Exception e)
-    // {
-    // e.printStackTrace();
-    // return null;
-    // }
 
     public synchronized boolean upload(String clientName, String filename, FileContents contents)
             throws RemoteException {
