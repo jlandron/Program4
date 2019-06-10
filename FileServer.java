@@ -46,8 +46,8 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 FileInputStream fin = new FileInputStream(filename);
                 file = new FileEntry(filename, ServerState.NOT_SHARED);
                 file.setContents(Files.readAllBytes(Paths.get(filename)));
-                m_files.insertElementAt(file, 0);
-                index = 0;
+                m_files.add(file);
+                index = m_files.size() - 1;
             } catch (Exception e) {
                 System.err.println("Download failed: " + e.getMessage());
                 e.printStackTrace();
@@ -61,6 +61,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 m_files.elementAt(index).setState(ServerState.READ_SHARED);
             }
         }
+
         // requesting to write to file
         else if (ServerState.fromId(mode) == ServerState.WRITE_SHARED) {
             // add client to queue by default
@@ -85,7 +86,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 e.printStackTrace();
             }
             // once client is next in line, request file return.
-            System.out.println("requesting return of " + filename + " for " + client);
+            System.out.println("Requesting return of " + filename);
             m_files.elementAt(index).requestReturn();
             // wait for the previous clint to return the file
             while (m_files.elementAt(index).getState() == ServerState.OWNERSHIP_CHANGE) {
@@ -112,12 +113,12 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             if (m_files.elementAt(i).getName().equals(filename)) {
                 if (m_files.elementAt(i).getState() == ServerState.WRITE_SHARED
                         || m_files.elementAt(i).getState() == ServerState.OWNERSHIP_CHANGE) {
-                    System.out.println(m_files.elementAt(i).getReaders().toString());
                     System.out.println(
-                            "Uploading " + filename + " from " + m_files.elementAt(i).getOwner() + " started.");
+                            "Upload of " + filename + " from " + m_files.elementAt(i).getOwner() + " started.");
                     m_files.elementAt(i).setContents(contents.get());
                     m_files.elementAt(i).sendInvalidates();
                     if (m_files.elementAt(i).getState() == ServerState.WRITE_SHARED) {
+                        m_files.elementAt(i).setOwner("");
                         m_files.elementAt(i).setState(ServerState.NOT_SHARED);
                     } else if (m_files.elementAt(i).getState() == ServerState.OWNERSHIP_CHANGE) {
                         m_files.elementAt(i).setState(ServerState.WRITE_SHARED);

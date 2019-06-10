@@ -38,7 +38,6 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.WRITE_OWNED)) {
             return false;
         }
-        System.out.println("File Invalidated");
         _clientCache.set_state(FileClientState.INVALID);
         return true;
     }
