@@ -79,7 +79,7 @@ public class ClientCache {
     void set_state(FileClientState state) {
         _state = state;
 
-        UnixTools.changeFileMode(_cacheFilePath.toString(), (_state == FileClientState.WRITE_OWNED));
+        UnixTools.changeFileMode(_cacheFilePath.toString(), (_state != FileClientState.READ_SHARED));
     }
 
     /**
