@@ -26,7 +26,6 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
         m_ClientQueue = new LinkedList<>();
     }
 
-
     public FileContents download(String client, String filename, String mode) throws RemoteException {
         // check if server is being shutdown. No new requests.
         if (!m_IsActive) {
@@ -62,47 +61,51 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             // add client to queue by default
             m_ClientQueue.add(client);
             // check state
-            while (true) {
-                // check if file is unshared or just being read
-                if (file.getState() == ServerState.NOT_SHARED || file.getState() == ServerState.READ_SHARED) {
-                    file.setState(ServerState.WRITE_SHARED);
-                    break;
-                } // check if file is in
-                else if (file.getState() == ServerState.WRITE_SHARED) {
-                    if (m_ClientQueue.peek().equals(client)) {
-                        file.requestReturn();
-                        break;
-                    }
-                }
-                if (file.getState() == ServerState.OWNERSHIP_CHANGE) {
+
+            // check if file is unshared or just being read
+            if (file.getState() == ServerState.NOT_SHARED || file.getState() == ServerState.READ_SHARED) {
+                file.setState(ServerState.WRITE_SHARED);
+            } // check if file is in
+            else if (file.getState() == ServerState.WRITE_SHARED) {
+                // hold clients as long as they are not next in line.
+                while (!m_ClientQueue.peek().equals(client)) {
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(1000);
                     } catch (Exception e) {
                         System.err.println("Error Downloading: " + e.getMessage());
                         e.printStackTrace();
                     }
                 }
+                System.out.println("requesting return of " + filename);
+                file.requestReturn();
+            }
+            while (file.getState() == ServerState.OWNERSHIP_CHANGE) {
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    System.err.println("Error Downloading: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
             file.setOwner(m_ClientQueue.remove());
         }
         fileContents = new FileContents(file.getContents());
+        System.out.println("Downloading " + filename + " to " + client + " finished.");
         return fileContents;
     }
 
-    public synchronized boolean upload(String clientName, String filename, FileContents contents)
-            throws RemoteException {
+    public boolean upload(String clientName, String filename, FileContents contents) throws RemoteException {
         FileEntry file = null;
         for (int i = 0; i < this.m_files.size(); i++) {
             if (m_files.elementAt(i).getName().equals(filename)) {
                 file = m_files.elementAt(i);
-                ServerState state = file.getState();
-                if (state == ServerState.WRITE_SHARED || state == ServerState.OWNERSHIP_CHANGE) {
+                if (file.getState() == ServerState.WRITE_SHARED || file.getState() == ServerState.OWNERSHIP_CHANGE) {
                     System.out.println("Uploading " + filename + " started.");
                     file.setContents(contents.get());
                     file.sendInvalidates();
-                    if (state == ServerState.WRITE_SHARED) {
+                    if (file.getState() == ServerState.WRITE_SHARED) {
                         file.setState(ServerState.NOT_SHARED);
-                    } else if (state == ServerState.OWNERSHIP_CHANGE) {
+                    } else if (file.getState() == ServerState.OWNERSHIP_CHANGE) {
                         file.setState(ServerState.WRITE_SHARED);
                     }
                 } else {
