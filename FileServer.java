@@ -12,7 +12,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
     private String m_port;
     private int m_ShutdownCode = 1234;
     private Vector<FileEntry> m_files;
-    private Queue<String> m_ClientQueue;
+    private Vector<String> m_ClientQueue;
 
     FileServer() throws RemoteException {
         m_port = null;
@@ -23,7 +23,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
     public FileServer(String port) throws RemoteException {
         m_port = port;
         m_files = new Vector<>();
-        m_ClientQueue = new LinkedList<>();
+        m_ClientQueue = new Vector<>();
     }
 
     public FileContents download(String client, String filename, String mode) throws RemoteException {
@@ -33,53 +33,62 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
         }
         System.out.println("Downloading " + filename + " to " + client + " started.");
         FileContents fileContents = null;
-        FileEntry file = null;
+        int index = -1;
         for (int i = 0; i < m_files.size(); i++) {
             if (m_files.elementAt(i).getName().equals(filename)) {
-                file = m_files.elementAt(i);
+                index = i;
             }
             m_files.elementAt(i).removeReader(client);
         }
-        if (file == null) {
+        if (index == -1) {
             try {
+                FileEntry file;
                 FileInputStream fin = new FileInputStream(filename);
                 file = new FileEntry(filename, ServerState.NOT_SHARED);
                 file.setContents(Files.readAllBytes(Paths.get(filename)));
-                m_files.add(file);
+                m_files.insertElementAt(file, 0);
+                index = 0;
             } catch (Exception e) {
                 System.err.println("Download failed: " + e.getMessage());
                 e.printStackTrace();
                 return null;
             }
         }
+
         if (ServerState.fromId(mode) == ServerState.READ_SHARED) {
-            file.addReader(client);
-            if (file.getState() == ServerState.NOT_SHARED) {
-                file.setState(ServerState.READ_SHARED);
+            m_files.elementAt(index).addReader(client);
+            if (m_files.elementAt(index).getState() == ServerState.NOT_SHARED) {
+                m_files.elementAt(index).setState(ServerState.READ_SHARED);
             }
-        } else if (ServerState.fromId(mode) == ServerState.WRITE_SHARED) {
+        }
+        // requesting to write to file
+        else if (ServerState.fromId(mode) == ServerState.WRITE_SHARED) {
             // add client to queue by default
             m_ClientQueue.add(client);
-            // check state
-
             // check if file is unshared or just being read
-            if (file.getState() == ServerState.NOT_SHARED || file.getState() == ServerState.READ_SHARED) {
-                file.setState(ServerState.WRITE_SHARED);
+            if (m_files.elementAt(index).getState() == ServerState.NOT_SHARED
+                    || m_files.elementAt(index).getState() == ServerState.READ_SHARED) {
+                m_files.elementAt(index).setState(ServerState.WRITE_SHARED);
+                fileContents = new FileContents(m_files.elementAt(index).getContents().clone());
+                System.out.println("Downloading " + filename + " to " + client + " finished.");
+                m_files.elementAt(index).setOwner(m_ClientQueue.elementAt(0));
+                m_ClientQueue.removeElementAt(0);
+                return fileContents;
             } // check if file is in
-            else if (file.getState() == ServerState.WRITE_SHARED) {
-                // hold clients as long as they are not next in line.
-                while (!m_ClientQueue.peek().equals(client)) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-                        System.err.println("Error Downloading: " + e.getMessage());
-                        e.printStackTrace();
-                    }
+              // hold clients as long as they are not next in line.
+            try {
+                while (!m_ClientQueue.elementAt(0).equals(client)) {
+                    Thread.sleep(5000);
                 }
-                System.out.println("requesting return of " + filename);
-                file.requestReturn();
+            } catch (Exception e) {
+                System.err.println("Error Downloading: " + e.getMessage());
+                e.printStackTrace();
             }
-            while (file.getState() == ServerState.OWNERSHIP_CHANGE) {
+            // once client is next in line, request file return.
+            System.out.println("requesting return of " + filename + " for " + client);
+            m_files.elementAt(index).requestReturn();
+            // wait for the previous clint to return the file
+            while (m_files.elementAt(index).getState() == ServerState.OWNERSHIP_CHANGE) {
                 try {
                     Thread.sleep(1000);
                 } catch (Exception e) {
@@ -87,26 +96,31 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                     e.printStackTrace();
                 }
             }
-            file.setOwner(m_ClientQueue.remove());
+            m_files.elementAt(index).setOwner(m_ClientQueue.elementAt(0));
+            m_ClientQueue.removeElementAt(0);
         }
-        fileContents = new FileContents(file.getContents());
+        fileContents = new FileContents(m_files.elementAt(index).getContents().clone());
         System.out.println("Downloading " + filename + " to " + client + " finished.");
+
         return fileContents;
     }
 
-    public boolean upload(String clientName, String filename, FileContents contents) throws RemoteException {
-        FileEntry file = null;
+    public synchronized boolean upload(String clientName, String filename, FileContents contents)
+            throws RemoteException {
+
         for (int i = 0; i < this.m_files.size(); i++) {
             if (m_files.elementAt(i).getName().equals(filename)) {
-                file = m_files.elementAt(i);
-                if (file.getState() == ServerState.WRITE_SHARED || file.getState() == ServerState.OWNERSHIP_CHANGE) {
-                    System.out.println("Uploading " + filename + " started.");
-                    file.setContents(contents.get());
-                    file.sendInvalidates();
-                    if (file.getState() == ServerState.WRITE_SHARED) {
-                        file.setState(ServerState.NOT_SHARED);
-                    } else if (file.getState() == ServerState.OWNERSHIP_CHANGE) {
-                        file.setState(ServerState.WRITE_SHARED);
+                if (m_files.elementAt(i).getState() == ServerState.WRITE_SHARED
+                        || m_files.elementAt(i).getState() == ServerState.OWNERSHIP_CHANGE) {
+                    System.out.println(m_files.elementAt(i).getReaders().toString());
+                    System.out.println(
+                            "Uploading " + filename + " from " + m_files.elementAt(i).getOwner() + " started.");
+                    m_files.elementAt(i).setContents(contents.get());
+                    m_files.elementAt(i).sendInvalidates();
+                    if (m_files.elementAt(i).getState() == ServerState.WRITE_SHARED) {
+                        m_files.elementAt(i).setState(ServerState.NOT_SHARED);
+                    } else if (m_files.elementAt(i).getState() == ServerState.OWNERSHIP_CHANGE) {
+                        m_files.elementAt(i).setState(ServerState.WRITE_SHARED);
                     }
                     System.out.println("Uploading " + filename + " complete.");
                     return true;
@@ -115,12 +129,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                 }
             }
         }
-
-        if (file == null) {
-            System.err.println("Upload failed due to stated file not existing");
-            return false;
-        }
-        return true;
+        return false;
     }
 
     public static void main(String[] args) {

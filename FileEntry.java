@@ -59,29 +59,30 @@ public class FileEntry {
         m_State = state;
     }
 
-    public byte[] getContents() {
+    public synchronized byte[] getContents() {
         return m_Data.clone();
     }
 
-    public String getOwner() {
+    public synchronized String getOwner() {
         return m_Owner;
     }
 
-    public String getName() {
+    public synchronized String getName() {
         return m_FileName;
     }
 
-    public Vector<String> getReaders() {
+    public synchronized Vector<String> getReaders() {
         return m_Readers;
     }
 
-    public ServerState getState() {
+    public synchronized ServerState getState() {
         return m_State;
     }
 
-    public void sendInvalidates() {
+    public synchronized void sendInvalidates() {
         for (int i = 0; i < m_Readers.size(); i++) {
             try {
+                System.out.println("Sending invalidation to " + m_Readers.elementAt(i));
                 ClientInterface cInterface = (ClientInterface) Naming
                         .lookup("rmi://" + m_Readers.elementAt(i) + "/fileclient");
                 cInterface.invalidate();
@@ -91,11 +92,13 @@ public class FileEntry {
                 m_Readers.removeElementAt(i);
             }
         }
+        m_Readers.clear();
     }
 
-    public void requestReturn() {
+    public synchronized void requestReturn() {
         try {
             ClientInterface cInterface = (ClientInterface) Naming.lookup("rmi://" + m_Owner + "/fileclient");
+            System.out.println("Requesting return from " + m_Owner);
             cInterface.writeback();
             m_State = ServerState.OWNERSHIP_CHANGE;
         } catch (Exception e) {

@@ -38,7 +38,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.WRITE_OWNED)) {
             return false;
         }
-
+        System.out.println("File Invalidated");
         _clientCache.set_state(FileClientState.INVALID);
         return true;
     }
@@ -114,7 +114,8 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             // Check if cache doesn't contain the file user wants or that it is invalid
             if (!_clientCache.cacheContainsFile(_fileName) || _clientCache.get_state() == FileClientState.INVALID) {
                 // If new file, check if cache is in write mode and upload the current file
-                if (_clientCache.get_state() == FileClientState.WRITE_OWNED) {
+                if (_clientCache.get_state() == FileClientState.WRITE_OWNED
+                        || _clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP) {
                     if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                         // Error uploading the file to server, skip new download.
                         System.err.println("Upload failed: " + _clientCache.get_fileName());
