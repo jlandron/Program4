@@ -8,8 +8,6 @@ import java.io.*;
 
 class FileClient extends UnicastRemoteObject implements ClientInterface {
 
-    private BufferedReader m_Reader = null;
-
     private String _fileName = ""; // File to read or write
     private boolean _writeMode = false; // Access mode for the file
     private ServerInterface _server = null;
@@ -191,6 +189,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         boolean result;
         try {
             result = _server.upload(_clientName, fileName, contents);
+            _clientCache.set_state(FileClientState.INVALID);
         } catch (RemoteException ex) {
             System.err.println("Error uploading to server: " + ex.getMessage());
             result = false;
