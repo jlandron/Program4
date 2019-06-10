@@ -5,5 +5,5 @@ public interface ServerInterface extends Remote {
 
     public boolean upload(String client, String filename, FileContents contents) throws RemoteException;
 
-    public void shutDownServer(int code) throws RemoteException;
+    public void shutDownServer() throws RemoteException;
 }

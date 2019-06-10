@@ -40,7 +40,7 @@ public class ServerShutdown extends UnicastRemoteObject {
         ServerInterface server;
         try {
             server = (ServerInterface) Naming.lookup("rmi://" + args[0] + ":" + args[1] + "/fileserver");
-            server.shutDownServer(1234);
+            server.shutDownServer();
             System.exit(0);
         } catch (Exception e) {
             System.err.println("Error shutting down server: " + e.getMessage());

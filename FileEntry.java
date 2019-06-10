@@ -12,10 +12,6 @@
  *#############################################################################
  *
  * Implementation and assumptions:
- *  Uses Java RMI
- *  Assumes that input upon execution will be in order as follows:
- *  
- * java FileServer port#
  * 
  * ------------------------------------------------------------------------------
  **/
@@ -31,7 +27,7 @@ public class FileEntry {
 
     /**
      * ------------------------------------Constructor----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * no args constructor that simply sets all fields to null
      */
     public FileEntry() {
         m_Data = null;
@@ -43,7 +39,7 @@ public class FileEntry {
 
     /**
      * ------------------------------------Constructor----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * no args constructor that initializes all fields to either the passed to it or not.
      */
     public FileEntry(String filename, ServerState state) {
         m_Data = null;
@@ -54,7 +50,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * -----------------------------------addReader------------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized boolean addReader(String reader) {
@@ -70,7 +66,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ------------------------------------removeReader----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized boolean removeReader(String reader) {
@@ -84,7 +80,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ------------------------------------setOwner----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized void setOwner(String owner) {
@@ -93,7 +89,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * -----------------------------------setContents----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized void setContents(byte[] contents) {
@@ -101,7 +97,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ------------------------------------ setState----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized void setState(ServerState state) {
@@ -109,7 +105,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ----------------------------------- getContents----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized byte[] getContents() {
@@ -117,7 +113,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ------------------------------------ getOwner---------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized String getOwner() {
@@ -125,7 +121,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ------------------------------------getName----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized String getName() {
@@ -141,7 +137,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ------------------------------------ getState----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized ServerState getState() {
@@ -149,7 +145,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * -----------------------------------sendInvalidates----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized void sendInvalidates() {
@@ -169,7 +165,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
+     * ------------------------------------requestReturn----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized void requestReturn() {

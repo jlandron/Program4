@@ -238,13 +238,8 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * exits.
      * 
      * @throws RemoteException
-     * @param code : code that the client must know to call this method
      */
-    public void shutDownServer(int code) throws RemoteException {
-        if (code != m_ShutdownCode) {
-            System.err.println("Unauthorized call to shutdown server");
-            return;
-        }
+    public void shutDownServer() throws RemoteException {
         try {
             m_IsActive = false;
             for (int i = 0; i < m_files.size(); i++) {
