@@ -108,6 +108,8 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                     } else if (file.getState() == ServerState.OWNERSHIP_CHANGE) {
                         file.setState(ServerState.WRITE_SHARED);
                     }
+                    System.out.println("Uploading " + filename + " complete.");
+                    return true;
                 } else {
                     return false;
                 }
@@ -118,8 +120,6 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
             System.err.println("Upload failed due to stated file not existing");
             return false;
         }
-
-        System.out.println("Uploading " + filename + " complete.");
         return true;
     }
 
