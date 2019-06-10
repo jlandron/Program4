@@ -36,6 +36,13 @@ public class ServerShutdown extends UnicastRemoteObject {
             System.out.println("java ServerShutdown [serverIp] [port]");
             System.exit(-1);
         }
+        // wait for enter to be pressed
+        System.out.println("Press enter to shutdown the server");
+        try {
+            System.in.read();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
         // Attempt to create a shutdown instance
         ServerInterface server;
         try {
