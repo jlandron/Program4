@@ -1,3 +1,20 @@
+
+/**
+ *#############################################################################
+ *#------------------------------ ServerShutdown ------------------------------
+ *#  
+ *#  @author 	Joshua Landron
+ *#  @date 	    01Jun2019
+ *#  @version	9Jun2019
+ *#
+ *#  Built as part of CSS434 with Dr. Munehiro Fukuda, Spring 2019
+ *#
+ *#############################################################################
+ * 
+ * This class is instantiated after clients have shut down and server is ready to
+ * be turned off 
+ * ------------------------------------------------------------------------------
+ **/
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -5,7 +22,10 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 public class ServerShutdown extends UnicastRemoteObject {
-
+    /**
+     * ------------------------------------Constructor----------------------------------
+     * no args constructor
+     */
     public ServerShutdown() throws RemoteException {
         super();
     }
