@@ -64,7 +64,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      *           fields.
      * 
      * @throws RemoteException
-     * @param String : port the server is assigned to
+     * @param port : port the server is assigned to
      */
     public FileServer(String port) throws RemoteException {
         super();
@@ -79,9 +79,9 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * checks the state fo the file, sets the state of the file accordingly.
      * 
      * @throws RemoteException
-     * @param String : client name, should be clientIP:port#
-     * @param String : filename
-     * @param String : client operation mode
+     * @param client   : client name, should be clientIP:port#
+     * @param filename : name of file requested by client
+     * @param mode     : client operation mode
      * @return FileContents : FileContents object that holds a byte[] with the file
      *         information
      */
@@ -173,8 +173,8 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * method only allows the current owner of a file to upload the file.
      * 
      * @throws RemoteException
-     * @param String       : client name
-     * @param String       : filename
+     * @param clientName   : name of client uploading
+     * @param filename     : name of file being uploaded
      * @param FileContents : FileContents object that holds a byte[] with the file
      *                     information
      */
@@ -208,7 +208,11 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
 
     /**
      * ------------------------------------main-------------------------------------
-     * main method that instantiates the server object with the RMI registry
+     * 
+     * @param args : array of terminal inputs
+     * 
+     *             main method that instantiates the server object with the RMI
+     *             registry
      */
     public static void main(String[] args) {
         if (args.length != 1) {

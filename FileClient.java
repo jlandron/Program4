@@ -30,10 +30,23 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     private ClientCache _clientCache = null;
     private String _clientName = "";
 
+    /**
+     * ------------------------------------Constructor----------------------------------
+     * no args constructor (protected against use)
+     * 
+     * @throws RemoteException
+     */
     protected FileClient() throws RemoteException {
         super();
     }
 
+    /**
+     * ------------------------------------Constructor----------------------------------
+     * standard constructor that instantiates the server, clientname, and
+     * clientcache fields
+     * 
+     * @throws RemoteException
+     */
     public FileClient(String ipAddress, String port)
             throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException {
         _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
@@ -179,7 +192,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     }
 
     /**
-     *
+     * downloadFile
+     * 
+     * requests to download the file passed in as parameter from the server.
+     * 
      * @param fileName
      * @param writeMode
      * @return

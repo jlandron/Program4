@@ -25,6 +25,8 @@ public class ServerShutdown extends UnicastRemoteObject {
     /**
      * ------------------------------------Constructor----------------------------------
      * no args constructor
+     * 
+     * @throws RemoteException
      */
     public ServerShutdown() throws RemoteException {
         super();

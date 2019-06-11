@@ -52,6 +52,14 @@ public class UnixTools {
         return pb.start().waitFor();
     }
 
+    /**
+     * Using ProcessBuilder because terminal windows suck Taken off discussion
+     * boards because I was going to do the same thing.
+     *
+     * @param fileName  : Name of file to open in emacs
+     * @param writeable : if the file should be writable of not
+     * @return : int containing exit code
+     */
     public static boolean changeFileMode(String fileName, boolean writeAble) {
         boolean result = true;
 
