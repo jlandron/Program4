@@ -29,7 +29,6 @@ class ClientCache {
 
     /**
      * Clears out the cache
-     *
      */
     void clearCache() {
         try {
