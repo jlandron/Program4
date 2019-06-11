@@ -1,3 +1,27 @@
+/*
+ *#############################################################################
+ *#------------------------------ FileClient -----------------------------------
+ *#
+ *#  @author 	Abshire, Ed <eabshire@uw.edu>
+ *#  @date 	    01 June 2019
+ *#
+ *#  Built as part of CSS434 with Dr. Munehiro Fukuda, Spring 2019
+ *#############################################################################
+ *
+ * Implementation and assumptions:
+ *  Uses Java RMI
+ *  Assumes that input upon execution will be in order as follows:
+ *  j ava FileClient [FileServer IP/Hostname] [port#]
+ *
+ * The FileClient class allows the user to download a file from the server. The
+ * user can choose to take the file in read or write mode for editing or
+ * viewing.  The client caches the file locally.  If the client switches files,
+ * it will upload the current cache file if it was open for write.
+ *
+ * Any errors will reset the loop back to user input and leave the cache in
+ * its previous state.
+ * ------------------------------------------------------------------------------
+ */
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -5,18 +29,35 @@ import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
+/**
+ * FileClient class for user to access FileServer
+ */
 class FileClient extends UnicastRemoteObject implements ClientInterface {
 
-    private String _fileName = ""; // File to read or write
-    private boolean _writeMode = false; // Access mode for the file
-    private ServerInterface _server = null;
-    private ClientCache _clientCache = null;
-    private String _clientName = "";
+    private String _fileName = "";          // File to read or write
+    private boolean _writeMode = false;     // Access mode for the file
+    private ServerInterface _server;
+    private ClientCache _clientCache;
+    private String _clientName;
 
+    /**
+     * Default constructor
+     * @throws RemoteException thrown on RMI issue
+     * /
     protected FileClient() throws RemoteException {
         super();
     }
 
+    /**
+     * Constructor for FileClient
+     *
+     * @param ipAddress String containing address to FileServer
+     * @param port Port server is on
+     * @throws RemoteException Exception for Remote Invocation
+     * @throws NotBoundException RMI not bound
+     * @throws MalformedURLException Bad RMI url
+     * @throws UnknownHostException Unknown host for RMI
+     */
     public FileClient(String ipAddress, String port)
             throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException {
         _server = (ServerInterface) Naming.lookup("rmi://" + ipAddress + ":" + port + "/fileserver");
@@ -162,10 +203,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     }
 
     /**
+     * Downloads a file from the server
      *
-     * @param fileName
-     * @param writeMode
-     * @return
+     * @param fileName Name of the file to download
+     * @param writeMode W for write mode, R for read mode
+     * @return True if download was successful, false otherwise.
      */
     private FileContents downloadFile(String fileName, boolean writeMode) {
         FileContents contents = null;
@@ -179,10 +221,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     }
 
     /**
+     * Uploads a file to the server
      *
-     * @param fileName
-     * @param contents
-     * @return
+     * @param fileName String containing the name of the file to upload
+     * @param contents FileContent object containing the file to upload
+     * @return True if upload was successful, false otherwise.
      */
     private boolean uploadFile(String fileName, FileContents contents) {
         boolean result;
