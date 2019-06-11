@@ -39,7 +39,8 @@ public class FileEntry {
 
     /**
      * ------------------------------------Constructor----------------------------------
-     * no args constructor that initializes all fields to either the passed to it or not.
+     * no args constructor that initializes all fields to either the passed to it or
+     * not.
      */
     public FileEntry(String filename, ServerState state) {
         m_Data = null;
@@ -97,24 +98,27 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------ setState----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * ------------------------------------
+     * setState---------------------------------- no args constructor that simply
+     * prints an error message and exits
      */
     public synchronized void setState(ServerState state) {
         m_State = state;
     }
 
     /**
-     * ----------------------------------- getContents----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * -----------------------------------
+     * getContents---------------------------------- no args constructor that simply
+     * prints an error message and exits
      */
     public synchronized byte[] getContents() {
         return m_Data.clone();
     }
 
     /**
-     * ------------------------------------ getOwner---------------------------------
-     * no args constructor that simply prints an error message and exits
+     * ------------------------------------
+     * getOwner--------------------------------- no args constructor that simply
+     * prints an error message and exits
      */
     public synchronized String getOwner() {
         return m_Owner;
@@ -137,8 +141,9 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------ getState----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * ------------------------------------
+     * getState---------------------------------- no args constructor that simply
+     * prints an error message and exits
      */
     public synchronized ServerState getState() {
         return m_State;

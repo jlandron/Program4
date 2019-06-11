@@ -1,9 +1,9 @@
 
-/**
+/*
  *#############################################################################
  *#------------------------------ FileServer -----------------------------------
  *#  
- *#  @author 	Joshua Landron
+ *#  @author 	Joshua Landron and Ed Abshires
  *#  @date 	    01Jun2019
  *#  @version	9Jun2019
  *#
@@ -29,7 +29,7 @@
  * to the server by any other client, the server sends invalidation messages to each
  * client that is reading the file.
  * ------------------------------------------------------------------------------
- **/
+ */
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Vector;
@@ -41,7 +41,6 @@ import java.nio.file.Paths;
 class FileServer extends UnicastRemoteObject implements ServerInterface {
     private boolean m_IsActive = true;
     private String m_port;
-    private int m_ShutdownCode = 1234;
     private Vector<FileEntry> m_files;
     private Vector<String> m_ClientQueue;
 
@@ -195,6 +194,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                         m_files.elementAt(i).setState(ServerState.NOT_SHARED);
                     } else if (m_files.elementAt(i).getState() == ServerState.OWNERSHIP_CHANGE) {
                         m_files.elementAt(i).setState(ServerState.WRITE_SHARED);
+                        m_files.elementAt(i).addReader(m_files.elementAt(i).getOwner());
                     }
                     System.out.println("Uploading " + filename + " complete.");
                     return true;

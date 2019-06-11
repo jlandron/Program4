@@ -1,3 +1,18 @@
+
+/*
+ *#############################################################################
+ *#------------------------------ FileContents -----------------------------------
+ *#  
+ *#  @author 	Joshua Landron and Ed Abshire
+ *#  @date 	    01Jun2019
+ *#  @version	9Jun2019
+ *#
+ *#  Built as part of CSS434 with Dr. Munehiro Fukuda, Spring 2019
+ *#
+ *#############################################################################
+ *
+ * Object that manages the client objects cache
+ */
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,3 +1,20 @@
+
+/*
+ *#############################################################################
+ *#------------------------------ FileContents -----------------------------------
+ *#  
+ *#  @author 	Joshua Landron and Ed Abshire
+ *#  @date 	    01Jun2019
+ *#  @version	9Jun2019
+ *#
+ *#  Built as part of CSS434 with Dr. Munehiro Fukuda, Spring 2019
+ *#
+ *#############################################################################
+ *
+ * RMI client that can hold a single file in its cache. Client can either choose 
+ * read fo write mode fot a specific file, and the server will send the file 
+ * accordingly.
+ */
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
