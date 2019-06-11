@@ -4,7 +4,6 @@ import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
-import java.io.*;
 
 class FileClient extends UnicastRemoteObject implements ClientInterface {
 
@@ -33,10 +32,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      */
     public boolean invalidate() throws RemoteException {
 
-        if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.WRITE_OWNED)) {
+        if ((_clientCache == null) || (_clientCache.get_state() == ClientState.WRITE_OWNED)) {
             return false;
         }
-        _clientCache.set_state(FileClientState.INVALID);
+        _clientCache.set_state(ClientState.INVALID);
         return true;
     }
 
@@ -48,12 +47,12 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      * @throws RemoteException on RMI error
      */
     public boolean writeback() throws RemoteException {
-        if ((_clientCache == null) || (_clientCache.get_state() == FileClientState.INVALID)
-                || (_clientCache.get_state() == FileClientState.READ_SHARED)) {
+        if ((_clientCache == null) || (_clientCache.get_state() == ClientState.INVALID)
+                || (_clientCache.get_state() == ClientState.READ_SHARED)) {
             return false;
         }
 
-        _clientCache.set_state(FileClientState.RELEASE_OWNERSHIP);
+        _clientCache.set_state(ClientState.RELEASE_OWNERSHIP);
         return true;
     }
 
@@ -99,8 +98,8 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
 
             // If exiting, upload any file in write mode or release mode
             if (exit) {
-                if ((_clientCache != null) && ((_clientCache.get_state() == FileClientState.WRITE_OWNED)
-                        || (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP))) {
+                if ((_clientCache != null) && ((_clientCache.get_state() == ClientState.WRITE_OWNED)
+                        || (_clientCache.get_state() == ClientState.RELEASE_OWNERSHIP))) {
                     if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                         System.err.println("Error uploading file on exit: " + _clientCache.get_fileName());
                     }
@@ -109,10 +108,10 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             }
 
             // Check if cache doesn't contain the file user wants or that it is invalid
-            if (!_clientCache.cacheContainsFile(_fileName) || _clientCache.get_state() == FileClientState.INVALID) {
+            if (!_clientCache.cacheContainsFile(_fileName) || _clientCache.get_state() == ClientState.INVALID) {
                 // If new file, check if cache is in write mode and upload the current file
-                if (_clientCache.get_state() == FileClientState.WRITE_OWNED
-                        || _clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP) {
+                if (_clientCache.get_state() == ClientState.WRITE_OWNED
+                        || _clientCache.get_state() == ClientState.RELEASE_OWNERSHIP) {
                     if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                         // Error uploading the file to server, skip new download.
                         System.err.println("Upload failed: " + _clientCache.get_fileName());
@@ -129,18 +128,18 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
                 _clientCache.clearCache();
                 _clientCache.createCache(contents);
                 _clientCache.set_fileName(_fileName);
-                _clientCache.set_state((_writeMode ? FileClientState.WRITE_OWNED : FileClientState.READ_SHARED));
+                _clientCache.set_state((_writeMode ? ClientState.WRITE_OWNED : ClientState.READ_SHARED));
             }
             // Cache contains the file and it's not invalid
             else {
                 // Check if switching from read to write
-                if (_writeMode && (_clientCache.get_state() == FileClientState.READ_SHARED)) {
+                if (_writeMode && (_clientCache.get_state() == ClientState.READ_SHARED)) {
                     FileContents contents = downloadFile(_fileName, _writeMode);
                     if (contents == null) {
                         System.err.println("Unable to switch to write mode: " + _fileName);
                         continue;
                     }
-                    _clientCache.set_state(FileClientState.WRITE_OWNED);
+                    _clientCache.set_state(ClientState.WRITE_OWNED);
                 }
             }
 
@@ -152,12 +151,12 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
             }
 
             // Check post-edit for upload request
-            if (_clientCache.get_state() == FileClientState.RELEASE_OWNERSHIP) {
+            if (_clientCache.get_state() == ClientState.RELEASE_OWNERSHIP) {
                 if (!uploadFile(_clientCache.get_fileName(), _clientCache.getCache())) {
                     System.err.println("Upload failed:" + _clientCache.get_fileName());
                     continue;
                 }
-                _clientCache.set_state(FileClientState.READ_SHARED);
+                _clientCache.set_state(ClientState.READ_SHARED);
             }
         }
     }
@@ -189,7 +188,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
         boolean result;
         try {
             result = _server.upload(_clientName, fileName, contents);
-            _clientCache.set_state(FileClientState.INVALID);
+            _clientCache.set_state(ClientState.INVALID);
         } catch (RemoteException ex) {
             System.err.println("Error uploading to server: " + ex.getMessage());
             result = false;

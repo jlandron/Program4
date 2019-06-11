@@ -29,7 +29,7 @@ public enum ServerState {
      * Gets the enumeration value based on the string id passed in
      *
      * @param id string value of the enum to get.
-     * @return FileClientState based on the enum, null otherwise
+     * @return ClientState based on the enum, null otherwise
      */
     public static ServerState fromId(String id) {
         for (ServerState state : ServerState.values()) {

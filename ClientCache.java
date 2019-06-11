@@ -8,7 +8,7 @@ public class ClientCache {
     final String tempDir = System.getProperty("java.io.tmpdir");
     final Path _cacheFilePath = Paths.get(tempDir + "/abshirelandron.txt");
     private String _fileName = "";
-    private FileClientState _state = FileClientState.INVALID;
+    private ClientState _state = ClientState.INVALID;
 
     ClientCache() {
         if (Files.exists(_cacheFilePath)) {
@@ -64,9 +64,9 @@ public class ClientCache {
     /**
      * Gets the state of the client cache
      *
-     * @return FileClientState enum indicating the state of the cache
+     * @return ClientState enum indicating the state of the cache
      */
-    FileClientState get_state() {
+    ClientState get_state() {
         return _state;
     }
 
@@ -74,12 +74,12 @@ public class ClientCache {
      * Sets the state of the client cache, also sets the cache file in read or write
      * mode.
      *
-     * @param state FileClientState enum indicating the state to set the cache
+     * @param state ClientState enum indicating the state to set the cache
      */
-    void set_state(FileClientState state) {
+    void set_state(ClientState state) {
         _state = state;
 
-        UnixTools.changeFileMode(_cacheFilePath.toString(), (_state != FileClientState.READ_SHARED));
+        UnixTools.changeFileMode(_cacheFilePath.toString(), (_state != ClientState.READ_SHARED));
     }
 
     /**
