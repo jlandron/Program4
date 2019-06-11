@@ -56,7 +56,12 @@ public class FileEntry {
 
     /**
      * -----------------------------------addReader------------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * method that adds a reader to m_Readers for this file
+     * 
+     * @param reader : string representing the clients name (ip:port#)
+     * @return boolean : represents if the readers was added. returns false if the
+     *         reader is already in the m_Readers list
      */
     public synchronized boolean addReader(String reader) {
         // first check if client is already a reader, if so they do not need to be
@@ -72,7 +77,13 @@ public class FileEntry {
 
     /**
      * ------------------------------------removeReader----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * method that removes a specific reader from any file they are currently
+     * reading from.
+     * 
+     * @param reader : reader to be removed if they are reading from any file
+     * @return boolean : represents if the reader was removed from any files reader
+     *         list.
      */
     public synchronized boolean removeReader(String reader) {
         for (int i = 0; i < m_Readers.size(); i++) {
@@ -86,7 +97,11 @@ public class FileEntry {
 
     /**
      * ------------------------------------setOwner----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * method that sets the owner field of this file object
+     * 
+     * @param owner : string representing the fileClient that is currently writing
+     *              to this file
      */
     public synchronized void setOwner(String owner) {
         m_Owner = owner;
@@ -95,7 +110,10 @@ public class FileEntry {
 
     /**
      * --------------------------------setContents----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * method that sets the contents of this file objects byte[]
+     * 
+     * @param contents : byte array holding the contents of this file.
      */
     public synchronized void setContents(byte[] contents) {
         m_Data = contents.clone();
@@ -103,7 +121,11 @@ public class FileEntry {
 
     /**
      * ----------------------------------setState----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * method that sets the state of this file object using ServerStates
+     * 
+     * @param state : a ServerState enum representing the current state of this file
+     *              object.
      */
     public synchronized void setState(ServerState state) {
         m_State = state;
@@ -111,7 +133,9 @@ public class FileEntry {
 
     /**
      * -----------------------------------getContents-------------------------------
-     * no args constructor that simply prints an error message and exits
+     * getter method to safely retrieve the contents of this file
+     * 
+     * @return m_Data : copy of this file's m_Data field.
      */
     public synchronized byte[] getContents() {
         return m_Data.clone();
@@ -119,7 +143,9 @@ public class FileEntry {
 
     /**
      * -------------------------------- getOwner-----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * getter method to return the current owner of this file.
+     * 
+     * @return m_Owner : string representing owner information
      */
     public synchronized String getOwner() {
         return m_Owner;
@@ -127,15 +153,21 @@ public class FileEntry {
 
     /**
      * ------------------------------------getName----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * getter method to return the name of this file
+     * 
+     * @return m_FileName : string representing the name of this file
      */
     public synchronized String getName() {
         return m_FileName;
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * ------------------------------------getReaders----------------------------------
+     * 
+     * getter method that returns the current reader vector of this file
+     * 
+     * @return m_Readers : a vector holding strings of reader information.
      */
     public synchronized Vector<String> getReaders() {
         return m_Readers;
@@ -143,7 +175,11 @@ public class FileEntry {
 
     /**
      * ------------------------------------getState--------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * getter method that returns the current state of this file.
+     * 
+     * @return m_State : a ServerState representing the current state of this file
+     *         object
      */
     public synchronized ServerState getState() {
         return m_State;
@@ -151,7 +187,10 @@ public class FileEntry {
 
     /**
      * -----------------------------------sendInvalidates----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * 
+     * method that send invalidation messages to all clients in this file's reader
+     * list, this method also empties this files reader list so that multiple
+     * invalidation calls are not made.
      */
     public synchronized void sendInvalidates() {
         for (int i = 0; i < m_Readers.size(); i++) {
@@ -171,7 +210,10 @@ public class FileEntry {
 
     /**
      * ------------------------------------requestReturn----------------------------------
-     * no args constructor that simply prints an error message and exits
+     * This method is called by the server to send a writeback request to the
+     * current owner of a file. This method changes the state of this file in
+     * preparation for the owning client to upload their version of the file to the
+     * server.
      */
     public synchronized void requestReturn() {
         try {
