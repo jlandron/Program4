@@ -1,26 +1,19 @@
+
 /*
  *#############################################################################
- *#------------------------------ FileClient -----------------------------------
+ *#------------------------------ FileContents -----------------------------------
  *#
- *#  @author 	Abshire, Ed <eabshire@uw.edu>
- *#  @date 	    01 June 2019
+ *#  @author 	Joshua Landron and Ed Abshire
+ *#  @date 	    01Jun2019
+ *#  @version	9Jun2019
  *#
  *#  Built as part of CSS434 with Dr. Munehiro Fukuda, Spring 2019
+ *#
  *#############################################################################
  *
- * Implementation and assumptions:
- *  Uses Java RMI
- *  Assumes that input upon execution will be in order as follows:
- *  j ava FileClient [FileServer IP/Hostname] [port#]
- *
- * The FileClient class allows the user to download a file from the server. The
- * user can choose to take the file in read or write mode for editing or
- * viewing.  The client caches the file locally.  If the client switches files,
- * it will upload the current cache file if it was open for write.
- *
- * Any errors will reset the loop back to user input and leave the cache in
- * its previous state.
- * ------------------------------------------------------------------------------
+ * RMI client that can hold a single file in its cache. Client can either choose
+ * read fo write mode fot a specific file, and the server will send the file
+ * accordingly.
  */
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -43,7 +36,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     /**
      * Default constructor
      * @throws RemoteException thrown on RMI issue
-     * /
+     */
     protected FileClient() throws RemoteException {
         super();
     }

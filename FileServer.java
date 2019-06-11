@@ -3,7 +3,7 @@
  *#############################################################################
  *#------------------------------ FileServer -----------------------------------
  *#  
- *#  @author 	Joshua Landron
+ *#  @author 	Joshua Landron and Ed Abshires
  *#  @date 	    01Jun2019
  *#  @version	9Jun2019
  *#
@@ -172,10 +172,10 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * method used by the FileClient to upload a file that is has written to. This
      * method only allows the current owner of a file to upload the file.
      * 
-     * @throws RemoteException on RMI error
-     * @param clientName String containing the client name
-     * @param filename String containing the name of the file being uploaded
-     * @param contents FileContents object that holds a byte[] with the file
+     * @throws RemoteException
+     * @param String       : client name
+     * @param String       : filename
+     * @param FileContents : FileContents object that holds a byte[] with the file
      *                     information
      * @return boolean True if successful, false otherwise
      */
@@ -195,6 +195,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
                         m_files.elementAt(i).setState(ServerState.NOT_SHARED);
                     } else if (m_files.elementAt(i).getState() == ServerState.OWNERSHIP_CHANGE) {
                         m_files.elementAt(i).setState(ServerState.WRITE_SHARED);
+                        m_files.elementAt(i).addReader(m_files.elementAt(i).getOwner());
                     }
                     System.out.println("Uploading " + filename + " complete.");
                     return true;
@@ -208,7 +209,11 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
 
     /**
      * ------------------------------------main-------------------------------------
-     * main method that instantiates the server object with the RMI registry
+     *
+     * @param args : array of terminal inputs
+     *
+     *             main method that instantiates the server object with the RMI
+     *             registry
      */
     public static void main(String[] args) {
         if (args.length != 1) {

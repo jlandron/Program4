@@ -39,7 +39,12 @@ public class FileEntry {
 
     /**
      * ------------------------------------Constructor----------------------------------
-     * no args constructor that initializes all fields to either the passed to it or not.
+     * 
+     * @param filename : name of this file object
+     * @param state    : current state of this file object
+     * 
+     *                 constructor that initializes all fields to either the passed
+     *                 to it or not.
      */
     public FileEntry(String filename, ServerState state) {
         m_Data = null;
@@ -89,7 +94,7 @@ public class FileEntry {
     }
 
     /**
-     * -----------------------------------setContents----------------------------------
+     * --------------------------------setContents----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized void setContents(byte[] contents) {
@@ -97,7 +102,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------ setState----------------------------------
+     * ----------------------------------setState----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized void setState(ServerState state) {
@@ -105,7 +110,7 @@ public class FileEntry {
     }
 
     /**
-     * ----------------------------------- getContents----------------------------------
+     * -----------------------------------getContents-------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized byte[] getContents() {
@@ -113,7 +118,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------ getOwner---------------------------------
+     * -------------------------------- getOwner-----------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized String getOwner() {
@@ -137,7 +142,7 @@ public class FileEntry {
     }
 
     /**
-     * ------------------------------------ getState----------------------------------
+     * ------------------------------------getState--------------------------------
      * no args constructor that simply prints an error message and exits
      */
     public synchronized ServerState getState() {
