@@ -1,5 +1,5 @@
 
-/**
+/*
  *#############################################################################
  *#------------------------------ FileServer -----------------------------------
  *#  
@@ -29,7 +29,7 @@
  * to the server by any other client, the server sends invalidation messages to each
  * client that is reading the file.
  * ------------------------------------------------------------------------------
- **/
+ */
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Vector;
@@ -41,7 +41,6 @@ import java.nio.file.Paths;
 class FileServer extends UnicastRemoteObject implements ServerInterface {
     private boolean m_IsActive = true;
     private String m_port;
-    private int m_ShutdownCode = 1234;
     private Vector<FileEntry> m_files;
     private Vector<String> m_ClientQueue;
 
@@ -49,7 +48,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * ------------------------------------Constructor----------------------------------
      * no args constructor
      * 
-     * @throws RemoteException
+     * @throws RemoteException on RMI error
      */
     FileServer() throws RemoteException {
         super();
@@ -64,8 +63,8 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * @override constructor that takes a port string and instantiates the server
      *           fields.
      * 
-     * @throws RemoteException
-     * @param String : port the server is assigned to
+     * @throws RemoteException on RMI Error
+     * @param port String the server is assigned to
      */
     public FileServer(String port) throws RemoteException {
         super();
@@ -79,10 +78,10 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * Method used by FileClient to download the requested file if it exists. it
      * checks the state fo the file, sets the state of the file accordingly.
      * 
-     * @throws RemoteException
-     * @param String : client name, should be clientIP:port#
-     * @param String : filename
-     * @param String : client operation mode
+     * @throws RemoteException On RMI Error
+     * @param client String containing client name, should be clientIP:port#
+     * @param filename String containing the name of the file
+     * @param mode String containing the operation mode (W or R)
      * @return FileContents : FileContents object that holds a byte[] with the file
      *         information
      */
@@ -173,11 +172,12 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * method used by the FileClient to upload a file that is has written to. This
      * method only allows the current owner of a file to upload the file.
      * 
-     * @throws RemoteException
-     * @param String       : client name
-     * @param String       : filename
-     * @param FileContents : FileContents object that holds a byte[] with the file
+     * @throws RemoteException on RMI error
+     * @param clientName String containing the client name
+     * @param filename String containing the name of the file being uploaded
+     * @param contents FileContents object that holds a byte[] with the file
      *                     information
+     * @return boolean True if successful, false otherwise
      */
     public synchronized boolean upload(String clientName, String filename, FileContents contents)
             throws RemoteException {
@@ -237,7 +237,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * files back to the disk. and unbinds the server from the RMI registry and
      * exits.
      * 
-     * @throws RemoteException
+     * @throws RemoteException on RMI error
      */
     public void shutDownServer() throws RemoteException {
         try {

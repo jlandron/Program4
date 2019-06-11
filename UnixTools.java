@@ -18,6 +18,7 @@ public class UnixTools {
         // Create the command array.
         String editor;
 
+        // OS Agnostic for Windows/Linux
         if (System.getProperty("os.name").startsWith("Windows")) {
             editor = "notepad";
         } else {
@@ -37,6 +38,14 @@ public class UnixTools {
         return pb.start().waitFor();
     }
 
+    /**
+     * Changes the mode of the file to read only or write
+     * OS agnostic between Windows and Linux
+     *
+     * @param fileName Name of the file to change the mode of
+     * @param writeAble True if writeable, false otherwise
+     * @return True if change succeeded, false otherwise
+     */
     public static boolean changeFileMode(String fileName, boolean writeAble) {
         boolean result = true;
 
