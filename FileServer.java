@@ -79,9 +79,9 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * checks the state fo the file, sets the state of the file accordingly.
      * 
      * @throws RemoteException On RMI Error
-     * @param client String containing client name, should be clientIP:port#
+     * @param client   String containing client name, should be clientIP:port#
      * @param filename String containing the name of the file
-     * @param mode String containing the operation mode (W or R)
+     * @param mode     String containing the operation mode (W or R)
      * @return FileContents : FileContents object that holds a byte[] with the file
      *         information
      */

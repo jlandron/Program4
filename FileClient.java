@@ -1,7 +1,7 @@
 
 /*
  *#############################################################################
- *#------------------------------ FileContents -----------------------------------
+ *#------------------------------ FileClient -----------------------------------
  *#
  *#  @author 	Joshua Landron and Ed Abshire
  *#  @date 	    01Jun2019
@@ -27,14 +27,15 @@ import java.util.*;
  */
 class FileClient extends UnicastRemoteObject implements ClientInterface {
 
-    private String _fileName = "";          // File to read or write
-    private boolean _writeMode = false;     // Access mode for the file
+    private String _fileName = ""; // File to read or write
+    private boolean _writeMode = false; // Access mode for the file
     private ServerInterface _server;
     private ClientCache _clientCache;
     private String _clientName;
 
     /**
      * Default constructor
+     * 
      * @throws RemoteException thrown on RMI issue
      */
     protected FileClient() throws RemoteException {
@@ -45,11 +46,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
      * Constructor for FileClient
      *
      * @param ipAddress String containing address to FileServer
-     * @param port Port server is on
-     * @throws RemoteException Exception for Remote Invocation
-     * @throws NotBoundException RMI not bound
+     * @param port      Port server is on
+     * @throws RemoteException       Exception for Remote Invocation
+     * @throws NotBoundException     RMI not bound
      * @throws MalformedURLException Bad RMI url
-     * @throws UnknownHostException Unknown host for RMI
+     * @throws UnknownHostException  Unknown host for RMI
      */
     public FileClient(String ipAddress, String port)
             throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException {
@@ -198,7 +199,7 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     /**
      * Downloads a file from the server
      *
-     * @param fileName Name of the file to download
+     * @param fileName  Name of the file to download
      * @param writeMode W for write mode, R for read mode
      * @return True if download was successful, false otherwise.
      */

@@ -1,8 +1,8 @@
 /*
  *#############################################################################
- *#------------------------------ FileContents -----------------------------------
+ *#------------------------------ UnixTools -----------------------------------
  *#
- *#  @author 	Joshua Landron and Ed Abshire (originally Dr.Munehiro Fukuda)
+ *#  @author 	Joshua Landron and Ed Abshire
  *#  @date 	    01Jun2019
  *#  @version	9Jun2019
  *#
