@@ -48,7 +48,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * ------------------------------------Constructor----------------------------------
      * no args constructor
      * 
-     * @throws RemoteException
+     * @throws RemoteException on RMI error
      */
     FileServer() throws RemoteException {
         super();
@@ -63,8 +63,8 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * @override constructor that takes a port string and instantiates the server
      *           fields.
      * 
-     * @throws RemoteException
-     * @param port : port the server is assigned to
+     * @throws RemoteException on RMI Error
+     * @param port String the server is assigned to
      */
     public FileServer(String port) throws RemoteException {
         super();
@@ -78,10 +78,10 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * Method used by FileClient to download the requested file if it exists. it
      * checks the state fo the file, sets the state of the file accordingly.
      * 
-     * @throws RemoteException
-     * @param client   : client name, should be clientIP:port#
-     * @param filename : name of file requested by client
-     * @param mode     : client operation mode
+     * @throws RemoteException On RMI Error
+     * @param client String containing client name, should be clientIP:port#
+     * @param filename String containing the name of the file
+     * @param mode String containing the operation mode (W or R)
      * @return FileContents : FileContents object that holds a byte[] with the file
      *         information
      */
@@ -173,10 +173,11 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * method only allows the current owner of a file to upload the file.
      * 
      * @throws RemoteException
-     * @param clientName   : name of client uploading
-     * @param filename     : name of file being uploaded
+     * @param String       : client name
+     * @param String       : filename
      * @param FileContents : FileContents object that holds a byte[] with the file
      *                     information
+     * @return boolean True if successful, false otherwise
      */
     public synchronized boolean upload(String clientName, String filename, FileContents contents)
             throws RemoteException {
@@ -208,9 +209,9 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
 
     /**
      * ------------------------------------main-------------------------------------
-     * 
+     *
      * @param args : array of terminal inputs
-     * 
+     *
      *             main method that instantiates the server object with the RMI
      *             registry
      */
@@ -241,7 +242,7 @@ class FileServer extends UnicastRemoteObject implements ServerInterface {
      * files back to the disk. and unbinds the server from the RMI registry and
      * exits.
      * 
-     * @throws RemoteException
+     * @throws RemoteException on RMI error
      */
     public void shutDownServer() throws RemoteException {
         try {

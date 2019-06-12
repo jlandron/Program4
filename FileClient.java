@@ -2,7 +2,7 @@
 /*
  *#############################################################################
  *#------------------------------ FileContents -----------------------------------
- *#  
+ *#
  *#  @author 	Joshua Landron and Ed Abshire
  *#  @date 	    01Jun2019
  *#  @version	9Jun2019
@@ -11,8 +11,8 @@
  *#
  *#############################################################################
  *
- * RMI client that can hold a single file in its cache. Client can either choose 
- * read fo write mode fot a specific file, and the server will send the file 
+ * RMI client that can hold a single file in its cache. Client can either choose
+ * read fo write mode fot a specific file, and the server will send the file
  * accordingly.
  */
 import java.net.InetAddress;
@@ -22,30 +22,34 @@ import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
+/**
+ * FileClient class for user to access FileServer
+ */
 class FileClient extends UnicastRemoteObject implements ClientInterface {
 
-    private String _fileName = ""; // File to read or write
-    private boolean _writeMode = false; // Access mode for the file
-    private ServerInterface _server = null;
-    private ClientCache _clientCache = null;
-    private String _clientName = "";
+    private String _fileName = "";          // File to read or write
+    private boolean _writeMode = false;     // Access mode for the file
+    private ServerInterface _server;
+    private ClientCache _clientCache;
+    private String _clientName;
 
     /**
-     * ------------------------------------Constructor----------------------------------
-     * no args constructor (protected against use)
-     * 
-     * @throws RemoteException
+     * Default constructor
+     * @throws RemoteException thrown on RMI issue
      */
     protected FileClient() throws RemoteException {
         super();
     }
 
     /**
-     * ------------------------------------Constructor----------------------------------
-     * standard constructor that instantiates the server, clientname, and
-     * clientcache fields
-     * 
-     * @throws RemoteException
+     * Constructor for FileClient
+     *
+     * @param ipAddress String containing address to FileServer
+     * @param port Port server is on
+     * @throws RemoteException Exception for Remote Invocation
+     * @throws NotBoundException RMI not bound
+     * @throws MalformedURLException Bad RMI url
+     * @throws UnknownHostException Unknown host for RMI
      */
     public FileClient(String ipAddress, String port)
             throws RemoteException, NotBoundException, MalformedURLException, UnknownHostException {
@@ -192,13 +196,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     }
 
     /**
-     * downloadFile
-     * 
-     * requests to download the file passed in as parameter from the server.
-     * 
-     * @param fileName
-     * @param writeMode
-     * @return
+     * Downloads a file from the server
+     *
+     * @param fileName Name of the file to download
+     * @param writeMode W for write mode, R for read mode
+     * @return True if download was successful, false otherwise.
      */
     private FileContents downloadFile(String fileName, boolean writeMode) {
         FileContents contents = null;
@@ -212,10 +214,11 @@ class FileClient extends UnicastRemoteObject implements ClientInterface {
     }
 
     /**
+     * Uploads a file to the server
      *
-     * @param fileName
-     * @param contents
-     * @return
+     * @param fileName String containing the name of the file to upload
+     * @param contents FileContent object containing the file to upload
+     * @return True if upload was successful, false otherwise.
      */
     private boolean uploadFile(String fileName, FileContents contents) {
         boolean result;

@@ -1,8 +1,7 @@
-
 /*
  *#############################################################################
  *#------------------------------ FileContents -----------------------------------
- *#  
+ *#
  *#  @author 	Joshua Landron and Ed Abshire (originally Dr.Munehiro Fukuda)
  *#  @date 	    01Jun2019
  *#  @version	9Jun2019
@@ -33,6 +32,7 @@ public class UnixTools {
         // Create the command array.
         String editor;
 
+        // OS Agnostic for Windows/Linux
         if (System.getProperty("os.name").startsWith("Windows")) {
             editor = "notepad";
         } else {
@@ -53,12 +53,12 @@ public class UnixTools {
     }
 
     /**
-     * Using ProcessBuilder because terminal windows suck Taken off discussion
-     * boards because I was going to do the same thing.
+     * Changes the mode of the file to read only or write
+     * OS agnostic between Windows and Linux
      *
-     * @param fileName  : Name of file to open in emacs
-     * @param writeable : if the file should be writable of not
-     * @return : int containing exit code
+     * @param fileName Name of the file to change the mode of
+     * @param writeAble True if writeable, false otherwise
+     * @return True if change succeeded, false otherwise
      */
     public static boolean changeFileMode(String fileName, boolean writeAble) {
         boolean result = true;
